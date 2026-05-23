@@ -27,14 +27,22 @@ describe("resolveOutcome", () => {
     assert.equal(result.outcome, "DENY");
   });
 
-  it("chooses AUDIT over PERMIT and keeps audit details", () => {
+  it("keeps PERMIT as the applied outcome when allow + audit coexist (audit is a side effect)", () => {
     const result = resolveOutcome({
       autonomy_allow: true,
       samd_audit: { "boundary event": true },
     });
 
-    assert.equal(result.outcome, "AUDIT");
+    assert.equal(result.outcome, "PERMIT");
     assert.equal(result.effects.audit[0].message, "boundary event");
+  });
+
+  it("falls back to AUDIT when audit fires but no package emits allow", () => {
+    const result = resolveOutcome({
+      samd_audit: { "boundary event": true },
+    });
+
+    assert.equal(result.outcome, "AUDIT");
   });
 
   it("fails closed when no package emits allow or another outcome", () => {

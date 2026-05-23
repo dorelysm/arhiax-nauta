@@ -31,7 +31,20 @@ export function resolveOutcome(policyResult) {
         : [],
   };
 
-  const outcome = PRECEDENCE.find((candidate) => buckets[candidate].length > 0) || "DENY";
+  // Precedence: SUSPEND > DENY > ESCALATE > MODIFY > PERMIT (when explicit
+  // allow) > AUDIT (audit alone, no allow) > DENY (fail-closed).
+  // AUDIT outranks PERMIT only when there is no explicit allow signal; per
+  // RUNTIME_API_CONTRACT.md §3 ("Permitir, pero escribir registros"), audit
+  // records co-exist with PERMIT and live in effects.audit, not as the
+  // user-facing outcome.
+  let outcome;
+  if (buckets.SUSPEND.length > 0) outcome = "SUSPEND";
+  else if (buckets.DENY.length > 0) outcome = "DENY";
+  else if (buckets.ESCALATE.length > 0) outcome = "ESCALATE";
+  else if (buckets.MODIFY.length > 0) outcome = "MODIFY";
+  else if (buckets.PERMIT.length > 0) outcome = "PERMIT";
+  else if (buckets.AUDIT.length > 0) outcome = "AUDIT";
+  else outcome = "DENY";
 
   const also_emitted = {};
   for (const candidate of PRECEDENCE) {

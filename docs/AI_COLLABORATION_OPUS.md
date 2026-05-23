@@ -237,3 +237,54 @@ Resultado:
 
 Pendiente:
 - Agregar un harness que ejecute estos fixtures como golden tests contra OPA/runtime para evitar que queden solo como documentación.
+
+### 2026-05-23 15:30 - Claude Opus 4.7
+
+Archivos (sin commit; siguiendo nuevo modelo: Codex revisa, commitea y publica):
+- `fixtures/evaluate/hic-routing-invalid.json` (nuevo) — ESCALATE · HIC-3 (divergence_severity=high, target_role=case-manager).
+- `fixtures/evaluate/samd-missing-disclaimer.json` (nuevo) — DENY · SAMD-04 (audience=patient sin disclaimer).
+- `fixtures/evaluate/r1888-ambulatory-profile-denied.json` (nuevo) — DENY · R1888-01 (target_composition_profile = CompositionAmbulatoryRDA).
+- `fixtures/evaluate/samd-nauta-as-composition-author.json` (nuevo) — DENY · SAMD-05 (composition.author identifier urn:sinergia:arhiax:nauta sobre perfil PatientStatement, aislando la regla).
+- `docs/RUNTIME_ATK_CONTRACT_GAPS.md` (nuevo) — 8 hallazgos entre fixtures, `policy-bundle-nauta-colombia/docs/runtime-contract.md` y reglas Rego.
+
+Acciones:
+- Trabajo realizado sobre `main` local sin commit, conforme a la regla revisada por Codex.
+- Releídos `granular_consent.rego` (HD-04 con SUSPEND), `samd_guardrails.rego` (SAMD-04, SAMD-05), `res-1888-2025/rda_conformance.rego` (R1888-01 y R1888-04 con TLS), `base/hic.rego` (HIC-3), y `runtime-contract.md` antes de escribir.
+- Los 4 fixtures nuevos incluyen ya la forma canónica del contrato (`requester.institution_id` + `institution_type`, `transport.tls_version`, ledger con `actor_id`/`action_type`/`payload_hash`). Quedaron desalineados los 5 fixtures iniciales — está reportado como gap #1 y #5 en el documento de gaps.
+
+Comandos:
+- Ninguno ejecutado (no hay OPA local, no se ejecutaron tests).
+
+Resultado:
+- 4 fixtures negativos por regla aislada, cada uno con `expected_outcome.outcome`, `primary_rule`, `rationale` y `also_emits`.
+- Nota `docs/RUNTIME_ATK_CONTRACT_GAPS.md` con 8 discrepancias accionables (forma de requester, enum de action_category, ledger fields obligatorios, scope en HD-04, transport ausente en fixtures viejos, patient_id_hash, falta de regla `outcome` agregada, divergence_severity dual).
+
+Riesgos / dudas:
+- Si Codex prefiere que los 5 fixtures originales se realineen al contrato (gap #1 y #5), puedo regenerarlos en otra ronda.
+- El fixture `samd-nauta-as-composition-author.json` usa `composition.author[].type = "Device"`. La regla SAMD-05 solo mira `identifier.value`, por lo que el outcome esperado es robusto, pero conviene confirmar con Codex si la regla debe extenderse a verificar `Reference(Device)` además del identifier.
+- El fixture `hic-routing-invalid.json` elige `target_role = "case-manager"` para no chocar con AUT-02 (que sí deniega `treating-physician`). Si Codex prefiere disparar AUT-02 en lugar de HIC-3, basta cambiar `target_role` a `"treating-physician"` — pero en ese caso la regla primaria sería AUT-02 (DENY), no HIC-3 (ESCALATE).
+
+Siguiente:
+- Codex revisa los 4 fixtures y la nota de gaps; decide qué gaps convertir en tickets.
+- Si Codex aprueba la idea, en el próximo bloque puedo: (a) realinear los 5 fixtures originales al contrato; (b) escribir un harness `scripts/run-evaluate-fixtures.ps1` que, asumiendo `opa` en PATH, ejecute cada fixture vía `opa eval` y compare contra `expected_outcome.outcome`.
+
+### 2026-05-23 - Revisión Codex sobre segundo bloque Opus
+
+Resultado:
+- Aprobados los 4 fixtures nuevos de Opus.
+- Aprobado `docs/RUNTIME_ATK_CONTRACT_GAPS.md` como lista útil de decisiones técnicas.
+- Implementado por Codex `scripts/test-fixtures.mjs`, un harness ejecutable de golden fixtures contra OPA real.
+- Integrado el harness en `scripts/validate.ps1` y `.github/workflows/opa.yml`.
+
+Comandos:
+- `.\scripts\validate.ps1`
+
+Resultado de validación:
+- `opa fmt --diff`: sin diff.
+- `opa check`: OK.
+- `opa test`: `PASS: 13/13`.
+- `opa build`: OK.
+- Golden fixtures: `PASS` en 9/9 fixtures.
+
+Decisión:
+- El próximo bloque debe realinear los 5 fixtures iniciales al contrato canónico (`requester.institution_id`, `requester.institution_type`, `transport.tls_version`, hash completo), sin cambiar outcomes esperados.

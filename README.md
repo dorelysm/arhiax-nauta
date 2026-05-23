@@ -29,7 +29,15 @@ Requiere `opa` instalado en PATH.
 .\scripts\validate.ps1
 ```
 
-Si `opa` no está instalado, el script falla con instrucciones. La validación completa queda además automatizada en GitHub Actions.
+Si `opa` no está instalado, el script descarga un binario temporal para validación local en Windows. La validación completa queda además automatizada en GitHub Actions.
+
+La validación ejecuta:
+
+- `opa fmt --diff`
+- `opa check`
+- `opa test`
+- `opa build`
+- golden fixtures en `fixtures/evaluate/*.json`
 
 ## Doctrina de ingeniería
 

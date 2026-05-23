@@ -11,6 +11,7 @@ dist/
 coverage/
 *.log
 nauta-policy-bundle.tar.gz
+.tmp/
 
 # Secrets/local env
 .env

@@ -1,0 +1,67 @@
+{
+  "expected_outcome": {
+    "outcome": "DENY",
+    "primary_rule": "SAMD-04",
+    "rationale": "Output dirigido a audience='patient' sin contains_medical_disclaimer. La regla SAMD-04 exige disclaimer explícito de no-asesoramiento-médico en cualquier output con audiencia paciente (régimen sanitario Decreto 4725/2005).",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0007",
+    "action_category": "emit_output",
+    "autonomy_level": "A2",
+    "target_role": "patient",
+    "timestamp": "2026-05-23T15:00:00-05:00",
+    "patient_id": "pt-co-cc-7070707070",
+    "patient_id_hash": "sha256:11aa22bb33cc44dd55ee66ff77001122334455667788990011223344556677ff",
+    "requester": {
+      "role": "patient",
+      "institution_id": "ips_fsfb_bog",
+      "institution_type": "ips_hospital"
+    },
+    "institution": {
+      "id": "ips_fsfb_bog",
+      "authorization_status": "active",
+      "overlay_status": "calibrated",
+      "a4_enabled": false,
+      "a4_signed_by_dpo": false
+    },
+    "transport": {
+      "tls_version": "1.3",
+      "cipher_suite": "TLS_AES_256_GCM_SHA384"
+    },
+    "output": {
+      "label": "narrative_organization",
+      "audience": "patient",
+      "target_role": "patient",
+      "contains_clinical_content": false,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": false,
+      "severity": "low"
+    }
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator", "patient", "patient_authorized_representative"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0007": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T14:59:59-05:00",
+            "actor_id": "nauta-agent-001",
+            "action_type": "emit_output",
+            "payload_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      },
+      "feedback": {
+        "ips_fsfb_bog": { "rejected_30d": 0, "accepted_30d": 0, "last_updated": "2026-05-23T08:00:00-05:00" }
+      }
+    },
+    "thresholds": {
+      "institutional": {
+        "ips_fsfb_bog": { "max_consecutive_rejections": 5 }
+      }
+    }
+  }
+}

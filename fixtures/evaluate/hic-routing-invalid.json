@@ -1,0 +1,68 @@
+{
+  "expected_outcome": {
+    "outcome": "ESCALATE",
+    "primary_rule": "HIC-3",
+    "rationale": "Notificación de divergencia con severidad 'high' enrutada a un rol distinto de clinical-navigator. HIC-3 exige checkpoint humano vía clinical-navigator para severidades high/critical. Se elige target_role='case-manager' (no clinical-navigator y no treating-physician) para aislar HIC-3 sin disparar AUT-02 deny.",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0006",
+    "action_category": "divergence_notification",
+    "autonomy_level": "A3",
+    "target_role": "case-manager",
+    "timestamp": "2026-05-23T14:30:00-05:00",
+    "patient_id": "pt-co-cc-6060606060",
+    "patient_id_hash": "sha256:7b3c2e1f9a8d4c6b5e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d",
+    "requester": {
+      "role": "clinical-navigator",
+      "institution_id": "ips_cgn_baq",
+      "institution_type": "ips_hospital"
+    },
+    "institution": {
+      "id": "ips_cgn_baq",
+      "authorization_status": "active",
+      "overlay_status": "calibrated",
+      "a4_enabled": false,
+      "a4_signed_by_dpo": false
+    },
+    "transport": {
+      "tls_version": "1.3",
+      "cipher_suite": "TLS_AES_256_GCM_SHA384"
+    },
+    "divergence_severity": "high",
+    "output": {
+      "label": "coordination_alert",
+      "audience": "case-manager",
+      "target_role": "case-manager",
+      "contains_clinical_content": true,
+      "routed_via_navigator": false,
+      "contains_medical_disclaimer": true,
+      "severity": "high"
+    }
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator", "case-manager", "patient", "patient_authorized_representative"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0006": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T14:29:59-05:00",
+            "actor_id": "nauta-agent-001",
+            "action_type": "divergence_notification",
+            "payload_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      },
+      "feedback": {
+        "ips_cgn_baq": { "rejected_30d": 0, "accepted_30d": 12, "last_updated": "2026-05-23T08:00:00-05:00" }
+      }
+    },
+    "thresholds": {
+      "institutional": {
+        "ips_cgn_baq": { "max_consecutive_rejections": 7 }
+      }
+    }
+  }
+}

@@ -4,6 +4,18 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Invoke-Checked {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ScriptBlock]$Command
+    )
+
+    & $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command failed with exit code $LASTEXITCODE"
+    }
+}
+
 $OpaCommand = Get-Command opa -ErrorAction SilentlyContinue
 if (-not $OpaCommand) {
     $TempOpa = Join-Path $env:TEMP "opa_windows_amd64.exe"
@@ -17,18 +29,21 @@ if (-not $OpaCommand) {
 }
 
 Write-Host "==> OPA version"
-& $Opa version
+Invoke-Checked { & $Opa version }
 
 Write-Host "==> Formatting check"
-& $Opa fmt --diff $BundlePath
+Invoke-Checked { & $Opa fmt --diff $BundlePath }
 
 Write-Host "==> Static check"
-& $Opa check $BundlePath
+Invoke-Checked { & $Opa check $BundlePath }
 
 Write-Host "==> Tests"
-& $Opa test $BundlePath
+Invoke-Checked { & $Opa test $BundlePath }
 
 Write-Host "==> Build"
-& $Opa build $BundlePath -o nauta-policy-bundle.tar.gz
+Invoke-Checked { & $Opa build $BundlePath -o nauta-policy-bundle.tar.gz }
+
+Write-Host "==> Golden fixtures"
+Invoke-Checked { node .\scripts\test-fixtures.mjs }
 
 Write-Host "Validación completada."

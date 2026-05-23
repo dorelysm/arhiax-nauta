@@ -35,6 +35,9 @@ jobs:
       - name: Build bundle
         run: opa build policy-bundle-nauta-colombia -o nauta-policy-bundle.tar.gz
 
+      - name: Golden fixtures
+        run: node scripts/test-fixtures.mjs
+
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
         with:

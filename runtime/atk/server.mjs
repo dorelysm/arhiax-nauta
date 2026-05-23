@@ -8,6 +8,7 @@ import { Ledger, hashPayload } from "./ledger.mjs";
 import { evaluatePolicyResult, mapEvaluationError } from "./evaluate.mjs";
 import { uuidv7 } from "./evaluation-id.mjs";
 import { evaluateAgainstOpa, loadBaseData, mergeDeep } from "./opa-client.mjs";
+import { AuditStream } from "./audit-stream.mjs";
 
 // HTTP surface for POST /evaluate. Implements the contract in
 // docs/RUNTIME_API_CONTRACT.md and the decisions in
@@ -75,6 +76,7 @@ export function createEvaluateServer(options = {}) {
   const authorizedRoles = options.authorizedRoles ?? STUB_AUTHORIZED_ROLES;
   const opaBin = options.opaBin ?? process.env.OPA_BIN ?? "opa";
   const idempotency = options.idempotencyCache ?? new Map();
+  const auditStream = options.auditStream ?? new AuditStream();
 
   async function handleEvaluate(req, res) {
     const startedAt = performance.now();
@@ -198,6 +200,19 @@ export function createEvaluateServer(options = {}) {
       fhir_validation: { performed: false, report_uri: null, issues_summary: null },
     };
 
+    // D-4: persist audit records to WAL BEFORE responding. If the WAL is
+    // unwritable we treat it as a dependency failure (503) so the caller
+    // can retry — this preserves observability invariants even when the
+    // ledger HMAC already succeeded.
+    try {
+      auditStream.recordEnvelope(responseBody);
+    } catch (err) {
+      const failResponse = mapEvaluationError(err, evaluationId);
+      idempotency.set(idemKey, { bodyHash, status: 503, body: failResponse });
+      jsonResponse(res, 503, failResponse);
+      return;
+    }
+
     idempotency.set(idemKey, { bodyHash, status: 200, body: responseBody });
     jsonResponse(res, 200, responseBody);
   }
@@ -217,15 +232,15 @@ export function createEvaluateServer(options = {}) {
     jsonResponse(res, 404, errorBody("not_found"));
   });
 
-  return { server, ledger, idempotency };
+  return { server, ledger, idempotency, auditStream };
 }
 
 export function startEvaluateServer(port = 0, options = {}) {
-  const { server, ledger, idempotency } = createEvaluateServer(options);
+  const { server, ledger, idempotency, auditStream } = createEvaluateServer(options);
   return new Promise((resolveStart) => {
     server.listen(port, () => {
       const address = server.address();
-      resolveStart({ server, ledger, idempotency, port: address.port });
+      resolveStart({ server, ledger, idempotency, auditStream, port: address.port });
     });
   });
 }

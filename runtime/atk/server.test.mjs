@@ -8,6 +8,7 @@ import { Ledger } from "./ledger.mjs";
 import { loadBaseData, mergeDeep } from "./opa-client.mjs";
 import { startEvaluateServer } from "./server.mjs";
 import { isUuidv7 } from "./evaluation-id.mjs";
+import { AuditStream } from "./audit-stream.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FIXTURE_DIR = join(REPO_ROOT, "fixtures", "evaluate");
@@ -47,12 +48,14 @@ async function post(port, path, body, headers = {}) {
 describe("evaluate server", () => {
   let tmpDir;
   let ledger;
+  let auditStream;
   let handle;
 
   function startWith(extraOptions = {}) {
     return startEvaluateServer(0, {
       repoRoot: REPO_ROOT,
       ledger,
+      auditStream,
       ...extraOptions,
     });
   }
@@ -60,12 +63,24 @@ describe("evaluate server", () => {
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), "nauta-server-"));
     ledger = new Ledger({ path: join(tmpDir, "ledger.jsonl"), key: "test-server-key" });
+    const sinkPath = join(tmpDir, "sink.jsonl");
+    const transport = {
+      records: [],
+      async send(record) {
+        this.records.push(record);
+      },
+    };
+    auditStream = new AuditStream({ walDir: join(tmpDir, "audit-wal"), transport, retryMs: 1 });
+    auditStream.__transport = transport;
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     if (handle?.server) {
       handle.server.close();
       handle = null;
+    }
+    if (auditStream) {
+      await auditStream.stop();
     }
     rmSync(tmpDir, { recursive: true, force: true });
   });
@@ -134,6 +149,14 @@ describe("evaluate server", () => {
     assert.ok(isUuidv7(res.body.evaluation_id));
     assert.ok(res.body.effects.audit.length > 0, "SAMD-06 audit should be emitted");
     assert.equal(res.body.policy_bundle_version, "0.2.0");
+
+    // D-4: audit stream drained to the transport after responding.
+    await auditStream.flush();
+    assert.ok(
+      auditStream.__transport.records.length >= 1,
+      "expected at least one audit record forwarded to the transport",
+    );
+    assert.equal(auditStream.__transport.records[0].evaluation_id, res.body.evaluation_id);
   });
 
   it("evaluates samd-violation as DENY", async () => {

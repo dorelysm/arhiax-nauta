@@ -201,6 +201,72 @@ describe("evaluate server", () => {
     assert.equal(ledger.readAll().length, 1);
   });
 
+  it("runs FHIR validator and short-circuits with 422 + FHIR-VAL-01 when blocking issues are reported", async () => {
+    const fixture = loadFixture("r1888-missing-provenance-denied.json");
+    const fhirValidator = {
+      mode: "mock",
+      async validate() {
+        return {
+          performed: true,
+          validator_mode: "mock",
+          issues: [
+            { severity: "error", code: "structure", details: "missing required field" },
+          ],
+          issues_summary: { fatal: 0, error: 1, warning: 0, information: 0 },
+          report_uri: "memory://mock",
+        };
+      },
+    };
+    handle = await startWith({ ...fixtureToServerConfig(fixture, REPO_ROOT), fhirValidator });
+    const res = await post(handle.port, "/v1/evaluate", fixture.input, {
+      "X-ARHIAX-Idempotency-Key": "test-key-fhir-reject",
+      "X-ARHIAX-Institution-Id": fixture.input.requester.institution_id,
+    });
+    assert.equal(res.status, 422);
+    assert.equal(res.body.outcome, "DENY");
+    assert.equal(res.body.reasons[0].rule, "FHIR-VAL-01");
+    assert.equal(res.body.fhir_validation.performed, true);
+    assert.equal(res.body.fhir_validation.issues_summary.error, 1);
+  });
+
+  it("passes through FHIR validation when no blocking issues and continues to OPA", async () => {
+    const fixture = loadFixture("r1888-missing-provenance-denied.json");
+    const fhirValidator = {
+      mode: "mock-clean",
+      async validate() {
+        return {
+          performed: true,
+          validator_mode: "mock-clean",
+          issues: [],
+          issues_summary: { fatal: 0, error: 0, warning: 1, information: 0 },
+          report_uri: "memory://mock-clean",
+        };
+      },
+    };
+    handle = await startWith({ ...fixtureToServerConfig(fixture, REPO_ROOT), fhirValidator });
+    const res = await post(handle.port, "/v1/evaluate", fixture.input, {
+      "X-ARHIAX-Idempotency-Key": "test-key-fhir-clean",
+      "X-ARHIAX-Institution-Id": fixture.input.requester.institution_id,
+    });
+    assert.equal(res.status, 200);
+    // OPA-level rule should still fire because Provenance is missing.
+    assert.equal(res.body.outcome, "DENY");
+    assert.equal(res.body.fhir_validation.performed, true);
+    assert.equal(res.body.fhir_validation.issues_summary.error, 0);
+    assert.equal(res.body.fhir_validation.issues_summary.warning, 1);
+  });
+
+  it("leaves fhir_validation.performed=false for non-submission action categories", async () => {
+    const fixture = loadFixture("valid-rda-submission.json");
+    handle = await startWith(fixtureToServerConfig(fixture, REPO_ROOT));
+    const res = await post(handle.port, "/v1/evaluate", fixture.input, {
+      "X-ARHIAX-Idempotency-Key": "test-key-no-fhir",
+      "X-ARHIAX-Institution-Id": fixture.input.requester.institution_id,
+    });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.fhir_validation.performed, false);
+  });
+
   it("returns 409 when idempotency-key is reused with a different body", async () => {
     const fixture = loadFixture("valid-rda-submission.json");
     handle = await startWith(fixtureToServerConfig(fixture, REPO_ROOT));

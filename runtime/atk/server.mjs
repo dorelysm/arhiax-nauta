@@ -9,6 +9,11 @@ import { evaluatePolicyResult, mapEvaluationError } from "./evaluate.mjs";
 import { uuidv7 } from "./evaluation-id.mjs";
 import { evaluateAgainstOpa, loadBaseData, mergeDeep } from "./opa-client.mjs";
 import { AuditStream } from "./audit-stream.mjs";
+import {
+  buildRejectionEnvelope as buildFhirRejection,
+  createFhirValidator,
+  isBlocking as isFhirBlocking,
+} from "./fhir-validator.mjs";
 
 // HTTP surface for POST /evaluate. Implements the contract in
 // docs/RUNTIME_API_CONTRACT.md and the decisions in
@@ -77,6 +82,7 @@ export function createEvaluateServer(options = {}) {
   const opaBin = options.opaBin ?? process.env.OPA_BIN ?? "opa";
   const idempotency = options.idempotencyCache ?? new Map();
   const auditStream = options.auditStream ?? new AuditStream();
+  const fhirValidator = options.fhirValidator ?? createFhirValidator();
 
   async function handleEvaluate(req, res) {
     const startedAt = performance.now();
@@ -163,6 +169,39 @@ export function createEvaluateServer(options = {}) {
       return;
     }
 
+    // Step 4 of the flow (RUNTIME_API_CONTRACT.md §1): FHIR structural
+    // validation runs before OPA, only when the action carries a bundle to
+    // the IHCE. Blocking issues map to a 422 envelope with FHIR-VAL-01;
+    // non-blocking results are attached to the response.
+    let fhirResult = null;
+    if (parsed.action_category === "submit_bundle_to_ihce" && parsed.bundle) {
+      try {
+        fhirResult = await fhirValidator.validate(parsed.bundle, { profile: parsed.target_bundle_profile });
+      } catch (err) {
+        const failResponse = mapEvaluationError(err, evaluationId);
+        idempotency.set(idemKey, { bodyHash, status: 503, body: failResponse });
+        jsonResponse(res, 503, failResponse);
+        return;
+      }
+
+      if (fhirResult.performed && isFhirBlocking(fhirResult.issues_summary)) {
+        const rejection = buildFhirRejection({
+          evaluationId,
+          result: fhirResult,
+          evaluatedAt: new Date().toISOString(),
+          policyBundleVersion: POLICY_BUNDLE_VERSION,
+        });
+        try {
+          auditStream.recordEnvelope(rejection);
+        } catch {
+          // Best-effort audit for rejections; do not block the 422 response.
+        }
+        idempotency.set(idemKey, { bodyHash, status: 422, body: rejection });
+        jsonResponse(res, 422, rejection);
+        return;
+      }
+    }
+
     const runtimeData = {
       runtime: {
         authorized_roles: authorizedRoles,
@@ -197,7 +236,13 @@ export function createEvaluateServer(options = {}) {
       ...envelope,
       evaluated_at: new Date().toISOString(),
       policy_bundle_version: POLICY_BUNDLE_VERSION,
-      fhir_validation: { performed: false, report_uri: null, issues_summary: null },
+      fhir_validation: fhirResult
+        ? {
+            performed: fhirResult.performed,
+            report_uri: fhirResult.report_uri ?? null,
+            issues_summary: fhirResult.issues_summary ?? null,
+          }
+        : { performed: false, report_uri: null, issues_summary: null },
     };
 
     // D-4: persist audit records to WAL BEFORE responding. If the WAL is

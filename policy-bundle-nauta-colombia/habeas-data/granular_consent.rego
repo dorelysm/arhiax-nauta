@@ -160,12 +160,24 @@ deny[msg] if {
 consent_revoked_at(access_ts) if {
 	rev := data.consent.revocations[input.patient_id]
 	rev.timestamp != ""
+	revocation_matches_scope(rev)
 
 	# Si la revocación ocurrió antes o cerca del access (margen 1 segundo)
 	# se considera revocado por protección
 	revocation_ns := time.parse_rfc3339_ns(rev.timestamp)
 	access_ns := time.parse_rfc3339_ns(access_ts)
 	revocation_ns <= access_ns + 1000000000 # 1 segundo en nanosegundos
+}
+
+revocation_matches_scope(rev) if {
+	not rev.scope
+}
+revocation_matches_scope(rev) if {
+	rev.scope == "global"
+}
+revocation_matches_scope(rev) if {
+	rev.scope == "specific_category"
+	rev.category == input.data_category
 }
 
 suspend[msg] if {

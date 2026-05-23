@@ -27,7 +27,7 @@ Acción sugerida: publicar enum cerrado en el contrato, o agregar regla Rego que
 
 Acción sugerida: agregar regla AUT-06 que falle si `actor_id` o `payload_hash` están vacíos, para mantener la propiedad estructural ("atestación precede acción" implica trazabilidad de quién y de qué). Hoy un runtime defectuoso podría rellenar solo los tres campos críticos y pasar OPA.
 
-## 4. `consent_revoked_at` y forma de `data.consent.revocations`
+## 4. `consent_revoked_at` y forma de `data.consent.revocations` [CERRADO]
 
 - Codex corrigió el fixture `revoked-consent.json` para que use `data.consent.revocations[patient_id]` como objeto único `{ timestamp, reason, scope }`, consistente con contrato §1.4 y con la regla HD-04.
 - Sin embargo, la sub-clave `scope` (`global | specific_category`) no se evalúa en HD-04: la revocación dispara SUSPEND incluso si `scope == specific_category` pero la categoría revocada no coincide con `input.data_category`.
@@ -42,7 +42,7 @@ Acción sugerida: o (a) HD-04 toma en cuenta `scope` y `data_category` antes de 
 
 Acción sugerida: añadir `transport` al stub de inputs de los primeros 5 fixtures (Codex puede patchear), o ajustar R1888-04 para tratar transport ausente como `DENY` explícito en lugar de depender de la semántica de `not` con undefined.
 
-## 6. `patient_id_hash`
+## 6. `patient_id_hash` [CERRADO]
 
 - Contrato §2 dice "SHA-256 of patient_id" (64 hex chars).
 - Los primeros 5 fixtures usan tokens cortos pseudo-hash (`sha256:9a6f...c4`). Los 4 nuevos usan 64 hex caracteres válidos pero no son el SHA-256 real de `patient_id`.
@@ -56,7 +56,7 @@ Acción sugerida: para fixtures golden no es crítico (ninguna regla Rego comput
 
 Acción sugerida: agregar en `base/` un módulo `arhiax.nauta.base.outcome` con regla `outcome := "SUSPEND" if count(suspend) > 0 else "DENY" if ...` que el runtime pueda consultar directamente. Beneficio: el harness de fixtures golden compara contra una única consulta OPA en lugar de reproducir la precedencia en código del runtime.
 
-## 8. `divergence_severity` doble fuente
+## 8. `divergence_severity` doble fuente [CERRADO]
 
 - `input.divergence_severity` (top-level) y `input.output.severity` coexisten en los fixtures.
 - `base/autonomy.rego` y `base/hic.rego` leen `input.divergence_severity`. `decreto-4725-2005/samd_guardrails.rego` AUDIT lee `input.output.severity`.

@@ -174,7 +174,7 @@ audit[record] if {
 		"regulatory_basis": "Decreto 4725 de 2005",
 		"output_label": input.output.label,
 		"referenced_criteria": input.output.referenced_criteria.citation,
-		"severity": input.output.severity,
+		"severity": object.get(input, "divergence_severity", "unknown"),
 		"target_role": input.output.target_role,
 		"patient_id_hash": input.patient_id_hash,
 		"samd_perimeter_check": "passed",

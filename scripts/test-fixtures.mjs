@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -84,6 +85,14 @@ const query = `{
 
 function evaluateFixture(fixturePath) {
   const fixture = readJson(fixturePath);
+  
+  if (fixture.input && typeof fixture.input.patient_id === "string" && fixture.input.patient_id_hash) {
+    const expectedHash = createHash("sha256").update(fixture.input.patient_id).digest("hex");
+    if (fixture.input.patient_id_hash !== expectedHash) {
+      console.warn(`[WARN] ${relative(fixtureRoot, fixturePath)}: patient_id_hash is not the actual SHA-256 of patient_id. Esto es tolerado en fixtures golden, pero debe corregirse si es nuevo.`);
+    }
+  }
+
   const tmpRoot = join(root, ".tmp");
   mkdirSync(tmpRoot, { recursive: true });
   const dir = mkdtempSync(join(tmpRoot, "nauta-fixture-"));

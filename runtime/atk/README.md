@@ -6,6 +6,8 @@ Current scope:
 
 - Resolve OPA package results into an ATK outcome using contractual precedence.
 - Keep audit records as side effects even when the primary outcome is `PERMIT`, `DENY`, `ESCALATE`, or `SUSPEND`.
+- Wrap policy results in a stable runtime response envelope with `evaluation_id`, `outcome`, `reasons`, `effects`, and `latency_ms`.
+- Fail closed on runtime evaluation errors.
 
 The runtime does not yet expose `/evaluate`. That endpoint will wrap:
 

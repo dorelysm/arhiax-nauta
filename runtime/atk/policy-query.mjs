@@ -1,19 +1,5 @@
 export const POLICY_QUERY = `{
-  "autonomy_allow": data.arhiax.nauta.base.autonomy.allow,
-  "autonomy_deny": data.arhiax.nauta.base.autonomy.deny,
-  "autonomy_suspend": data.arhiax.nauta.base.autonomy.suspend,
-  "hic_escalate": data.arhiax.nauta.base.hic.escalate,
-  "res_deny": data.arhiax.nauta.co.res_1888_2025.deny,
-  "habeas_allow": data.arhiax.nauta.co.habeas_data.allow,
-  "habeas_deny": data.arhiax.nauta.co.habeas_data.deny,
-  "habeas_suspend": data.arhiax.nauta.co.habeas_data.suspend,
-  "samd_allow": data.arhiax.nauta.co.decreto_4725_2005.allow,
-  "samd_deny": data.arhiax.nauta.co.decreto_4725_2005.deny,
-  "samd_escalate": data.arhiax.nauta.co.decreto_4725_2005.escalate,
-  "samd_audit": data.arhiax.nauta.co.decreto_4725_2005.audit,
-  "res_audit": data.arhiax.nauta.co.res_1888_2025.audit,
-  "habeas_audit": data.arhiax.nauta.co.habeas_data.audit,
-  "graus_audit": data.arhiax.nauta.clinical.graus_2016.audit
+  "outcome": data.arhiax.nauta.base.outcome
 }`;
 
 export const POLICY_DIRS = [

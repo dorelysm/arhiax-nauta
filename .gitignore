@@ -18,6 +18,9 @@ nauta-policy-bundle.tar.gz
 .env.*
 !.env.example
 
+# Local HMAC ledger (append-only JSONL, never committed)
+runtime/atk/.ledger/
+
 # Python transient files
 __pycache__/
 *.pyc

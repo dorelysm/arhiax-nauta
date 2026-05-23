@@ -20,6 +20,42 @@ Codex actúa como programador senior responsable de arquitectura, calidad final,
 6. Si agregas dependencias, justificar por qué son necesarias.
 7. Si una prueba falla, registrar comando, error breve y diagnóstico.
 
+## Modelo de trabajo paralelo
+
+Opus debe trabajar en una rama propia y en carriles que no bloqueen a Codex. Codex integra, revisa y decide merge.
+
+Rama recomendada para Opus:
+
+```bash
+git checkout -b opus/parallel-foundation
+```
+
+Reglas de paralelismo:
+
+- Opus NO debe trabajar directo sobre `main`.
+- Opus debe evitar modificar archivos que Codex esté corrigiendo activamente para CI, salvo que lo registre aquí antes.
+- Opus debe hacer commits pequeños por entregable.
+- Opus debe empujar su rama y abrir PR contra `main` cuando termine un bloque verificable.
+- Codex revisa el PR, resuelve conflictos y hace squash/merge si corresponde.
+
+Carriles paralelos definidos:
+
+| Carril | Responsable | Puede avanzar sin bloquear | Archivos preferidos |
+|---|---|---|---|
+| CI/Rego v1 compatibility | Codex | No | `policy-bundle-nauta-colombia/**/*.rego`, `.github/workflows/opa.yml` |
+| Fixtures end-to-end | Opus | Sí | `fixtures/evaluate/**`, `docs/AI_COLLABORATION_OPUS.md` |
+| FHIR Validator research | Opus | Sí | `docs/FHIR_VALIDATION_NOTES.md` |
+| Runtime ATK skeleton | Codex | Sí, después de CI base | `runtime/**`, `package.json`, `tsconfig.json` |
+| Clinical/regulatory rule changes | Codex review required | No | reglas Rego críticas |
+
+Primer bloque paralelo para Opus:
+
+1. Crear rama `opus/parallel-foundation`.
+2. Crear `fixtures/evaluate/`.
+3. Agregar fixtures JSON con campo `expected_outcome`.
+4. Crear `docs/FHIR_VALIDATION_NOTES.md` con recomendación técnica, sin instalar una integración pesada todavía.
+5. Registrar todo en la bitácora de este archivo.
+
 ## Asignación inicial para Claude Opus
 
 ### Tarea A - Auditoría técnica OPA/Rego

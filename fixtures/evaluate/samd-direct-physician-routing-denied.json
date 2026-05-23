@@ -1,0 +1,63 @@
+{
+  "expected_outcome": {
+    "outcome": "DENY",
+    "primary_rule": "SAMD-02",
+    "rationale": "El output lleva contenido clínico, su target es 'treating-physician' y NO transitó por clinical-navigator. SAMD-02 (TR-032/P-01 + Decreto 4725/2005) prohíbe routing directo a profesional tratante. Aislamiento: `input.target_role` se deja en 'clinical-navigator' para no disparar AUT-02 (que mira el top-level); SAMD-02 evalúa `input.output.target_role`.",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0015",
+    "action_category": "emit_output",
+    "autonomy_level": "A3",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T20:00:00-05:00",
+    "patient_id": "pt-co-cc-ffffffffff",
+    "patient_id_hash": "ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff0ff00",
+    "requester": {
+      "role": "clinical-navigator",
+      "institution_id": "ips_cgn_baq",
+      "institution_type": "ips_hospital"
+    },
+    "institution": {
+      "id": "ips_cgn_baq",
+      "authorization_status": "active",
+      "overlay_status": "calibrated",
+      "a4_enabled": false,
+      "a4_signed_by_dpo": false
+    },
+    "transport": {
+      "tls_version": "1.3",
+      "cipher_suite": "TLS_AES_256_GCM_SHA384"
+    },
+    "output": {
+      "label": "narrative_organization",
+      "audience": "treating-physician",
+      "target_role": "treating-physician",
+      "contains_clinical_content": true,
+      "routed_via_navigator": false,
+      "contains_medical_disclaimer": true,
+      "severity": "moderate"
+    },
+    "divergence_severity": "moderate"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator", "patient", "patient_authorized_representative"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0015": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T19:59:59-05:00",
+            "actor_id": "nauta-agent-001",
+            "action_type": "emit_output",
+            "payload_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+          }
+        }
+      },
+      "feedback": {
+        "ips_cgn_baq": { "rejected_30d": 0, "accepted_30d": 12, "last_updated": "2026-05-23T08:00:00-05:00" }
+      }
+    }
+  }
+}

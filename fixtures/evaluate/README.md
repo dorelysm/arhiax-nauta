@@ -39,6 +39,10 @@ Estos fixtures son la entrada canónica para probar el runtime ATK contra el `po
 | `invalid-transport-denied.json` | DENY | R1888-06 | Submission al IHCE sin TLS 1.3 (Anexo Técnico Res. 1888/2025) |
 | `sensitive-blanket-denied.json` | DENY | HD-02 | Categoría sensible con consent_type `blanket` (Ley 1581/2012 Art. 6) |
 | `rejection-quota-suspend.json` | SUSPEND | AUT-05 | IPS supera cuota de rechazos consecutivos (TR-032/CT-03) |
+| `r1888-missing-provenance-denied.json` | DENY | R1888-05 | Submission al IHCE sin Provenance firmado de Nauta (JWS ES256, role ASSEMBLER) |
+| `hd-explicit-exclusion-denied.json` | DENY | HD-03 | Exclusión activa del paciente bloquea propósito específico (TR-032/CF-02) |
+| `samd-direct-physician-routing-denied.json` | DENY | SAMD-02 | Output con contenido clínico ruteado directo a treating-physician sin pasar por clinical-navigator |
+| `samd-missing-criteria-citation-escalate.json` | ESCALATE | SAMD-03 | `criteria_pattern_match` sin `referenced_criteria` (cita publicada exigida para no constituir SaMD) |
 
 ## Ejecución
 
@@ -54,4 +58,4 @@ El harness imprime `PASS <archivo> -> <outcome> (<primary_rule>)` por cada fixtu
 node scripts/test-fixtures.mjs fixtures/evaluate/sensitive-blanket-denied.json
 ```
 
-Nota: el harness aún no conoce los prefijos `R1888-06`, `HD-02` ni `AUT-05`. Codex agregará las entradas necesarias en `scripts/test-fixtures.mjs` cuando integre este bloque.
+Nota: el harness en `main` ya reconoce los 12 prefijos en uso (`AUT-03/04/05`, `HIC-3`, `HD-02/03/04`, `R1888-01/05/06`, `SAMD-01/02/03/04/05`). Cualquier nueva regla deberá agregarse al objeto `checks` en `scripts/test-fixtures.mjs`.

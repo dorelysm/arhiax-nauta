@@ -499,3 +499,44 @@ Tareas:
 
 Nota:
 - Intenta aislar cada regla. Por ejemplo, en `SAMD-02` evita `target_role=treating-physician` si eso dispara `AUT-02`; usa `output.target_role` o campos específicos que dispare SAMD-02 sin mezclar outcomes, si la regla lo permite.
+
+### 2026-05-23 21:00 - Claude Opus 4.7
+
+Archivos (sin commit; Codex revisa y publica):
+- `fixtures/evaluate/r1888-missing-provenance-denied.json` (nuevo) — DENY · R1888-05.
+- `fixtures/evaluate/hd-explicit-exclusion-denied.json` (nuevo) — DENY · HD-03.
+- `fixtures/evaluate/samd-direct-physician-routing-denied.json` (nuevo) — DENY · SAMD-02.
+- `fixtures/evaluate/samd-missing-criteria-citation-escalate.json` (nuevo) — ESCALATE · SAMD-03.
+- `fixtures/evaluate/README.md` (4 filas nuevas; nota del harness actualizada).
+- `docs/RUNTIME_API_DECISIONS.md` (nuevo): recomendaciones formales para D-1..D-5 del contrato API.
+
+Aislamiento por fixture:
+- R1888-05: bundle estructuralmente válido (Composition raíz + Patient con ColombianPersonIdentifier + meta.profile BundlePatientStatementRDA) sin Condition/Observation/Procedure/AllergyIntolerance, TLS 1.3, sin entrada Provenance. Aísla R1888-05 evitando R1888-02/03/04/06.
+- HD-03: consent granular_explicit firmada y vigente (HD-01 podría permitir) + `data.consent.exclusions[patient]` con `excluded_purpose=longitudinal_coordination` y `data_category=mental_health`.
+- SAMD-02: `input.target_role="clinical-navigator"` (top-level, evita AUT-02) pero `input.output.target_role="treating-physician"` con `contains_clinical_content=true` y `routed_via_navigator=false`.
+- SAMD-03: `output.label="criteria_pattern_match"` sin `referenced_criteria`. ESCALATE.
+
+Decisiones recomendadas (RUNTIME_API_DECISIONS.md):
+- D-1: UUIDv7.
+- D-2: `reasons` solo outcome aplicado; secundarios en `also_emitted`; AUDIT en `effects`.
+- D-3: Idempotency-Key obligatoria siempre (400 si ausente).
+- D-4: Ledger HMAC síncrono; stream externo asíncrono con WAL local.
+- D-5: OpenAPI 3.1 como source of truth; JSON Schema extraído por build.
+
+Comandos:
+- `node scripts/test-fixtures.mjs`
+
+Resultado:
+- 16/16 fixtures PASS contra OPA real, incluyendo los 4 nuevos (R1888-05, HD-03, SAMD-02, SAMD-03).
+- Sorpresa positiva: el harness en `main` ya tenía precableados los 4 prefijos nuevos, por lo que no quedó trabajo pendiente para Codex en `scripts/test-fixtures.mjs`.
+- No modifiqué `.rego`, `runtime/`, `scripts/` ni `.github/` (regla 4 del bloque 5).
+
+Riesgos / dudas:
+- D-3 (idempotency obligatoria) cierra una puerta de adopción rápida; si Codex prefiere onboarding más fluido, "obligatoria solo para mutaciones" sigue defendible.
+- D-4 requiere disco escribible para WAL local. Si el target es serverless (Cloud Run/Lambda), conviene revisitar.
+- D-5 introduce `openapi-generator-cli` que añade JRE en build; si Codex prefiere puro Node, JSON Schema solo es viable.
+- En `samd-direct-physician-routing-denied.json` `output.audience` también queda en `treating-physician`. Si Codex prefiere que sólo `output.target_role` cargue el deny, lo regenero.
+
+Siguiente:
+- Codex revisa los 4 fixtures y las 5 decisiones del contrato.
+- Próximo bloque candidato sugerido: (a) materializar D-5 con `runtime/atk/openapi.yaml` + `runtime/atk/schemas/*.json` + middleware `ajv`; (b) primer `fixtures/fhir/` mínimo cuando se confirme `minsalud.fhir.co.rda#0.8.1`; (c) extender cobertura negativa restante (R1888-02/03/04, HIC-1/2/4/5, AUT-02 directo). Codex decide.

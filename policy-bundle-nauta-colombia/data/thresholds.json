@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "description": "Configurable thresholds for ARHIAX Nauta v0.2 (Colombia). Defaults from clinical literature; institutional overlays override per IPS calibration.",
+    "doctrinal_basis": "TR-2026-032 · CT-03 · Principios TRIZ 3 + 25 · Calibración local",
+    "version": "0.2.0",
+    "review_due": "2026-10-15"
+  },
+  "default": {
+    "graus_evaluation_latency_days": 14,
+    "antibody_result_max_days": 21,
+    "immunotherapy_initiation_max_days": 28,
+    "subacute_onset_max_days": 90,
+    "subacute_onset_min_days": 1,
+    "csf_pleocytosis_wbc_per_mm3": 5,
+    "divergence_severity_critical_days": 14,
+    "max_consecutive_rejections": 5,
+    "alert_acceptance_target_30d": 0.70,
+    "_note_defaults": "Valores derivados del Graus 2016 + literatura REAL LABIC 2025. Revisión cada 6 meses tras tener cohorte real."
+  },
+  "institutional": {
+    "ips_cgn_baq": {
+      "_label": "Clínica General del Norte · Barranquilla · Red REAL LABIC",
+      "_note": "Umbrales más sensibles por cohorte de encefalitis autoinmune en seguimiento activo",
+      "graus_evaluation_latency_days": 10,
+      "antibody_result_max_days": 14,
+      "immunotherapy_initiation_max_days": 21,
+      "max_consecutive_rejections": 7
+    },
+    "ips_fsfb_bog": {
+      "_label": "Fundación Santa Fe de Bogotá",
+      "_note": "Umbrales default literarios. Calibrar tras 3 meses de cohorte real.",
+      "graus_evaluation_latency_days": 14,
+      "antibody_result_max_days": 21,
+      "immunotherapy_initiation_max_days": 28,
+      "max_consecutive_rejections": 5
+    },
+    "ips_husi_bog": {
+      "_label": "Hospital Universitario San Ignacio · Pontificia Universidad Javeriana",
+      "_note": "Umbrales default literarios. Calibrar tras 3 meses de cohorte real.",
+      "graus_evaluation_latency_days": 14,
+      "antibody_result_max_days": 21,
+      "immunotherapy_initiation_max_days": 28,
+      "max_consecutive_rejections": 5
+    }
+  },
+  "_kill_critic_v0_1_addressed": "v0.1 incluía 'valid_patient_identifier_systems' con URNs inventadas. v0.2 elimina esa lista; la validación de identificadores se delega al CodeSystem oficial ColombianPersonIdentifier referenciado en res_1888_2025/rda_conformance.rego."
+}

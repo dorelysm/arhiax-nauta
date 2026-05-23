@@ -1,0 +1,40 @@
+name: OPA Policy Bundle
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Formatting diff
+        run: opa fmt --diff policy-bundle-nauta-colombia
+
+      - name: Parse
+        run: opa parse policy-bundle-nauta-colombia
+
+      - name: Test
+        run: opa test policy-bundle-nauta-colombia
+
+      - name: Build bundle
+        run: opa build policy-bundle-nauta-colombia -o nauta-policy-bundle.tar.gz
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nauta-policy-bundle
+          path: nauta-policy-bundle.tar.gz

@@ -1,0 +1,96 @@
+{
+  "bundle_id": "policy-bundle-nauta-colombia",
+  "version": "0.2.0",
+  "previous_version": "0.1.0",
+  "changelog_v0_2": [
+    "CORRECCIÓN: Conformidad RDA validada contra canonical URLs oficiales de la Guía MinSalud (vulcano.ihcecol.gov.co)",
+    "CORRECCIÓN: Terminologías sustituidas por CodeSystems oficiales colombianos (ColombianPersonIdentifier, ICD10CO, CUPS, REPShealthcarePositions, DIVIPOLA)",
+    "CORRECCIÓN: Eliminados códigos LOINC/SNOMED inventados; solo se exige uso de catálogos oficiales sin asumir codes específicos",
+    "CORRECCIÓN: Posicionamiento doctrinal explícito: Nauta produce CompositionPatientStatementRDA (paciente-como-autor), nunca CompositionAmbulatoryRDA (profesional-como-autor)",
+    "CORRECCIÓN: Algoritmo Graus 2016 modelado en tres niveles (possible, probable, definite) con fidelidad al paper original",
+    "CORRECCIÓN: Modos de falla documentados inline en el código (FMEA mínimo)",
+    "CORRECCIÓN: Dependencias del runtime ARHIAX explicitadas en docs/runtime-contract.md",
+    "CORRECCIÓN: Eliminadas todas las referencias a regulaciones no colombianas; ahora exclusivamente Colombia",
+    "AÑADIDO: Disclaimer legal explícito sobre no-sustitución de obligaciones",
+    "AÑADIDO: Test cross-paquete de flujo integral"
+  ],
+  "name": "ARHIAX Nauta · Colombia Policy Bundle",
+  "scope_declaration": "EXCLUSIVAMENTE COLOMBIA. Este bundle codifica únicamente regulación colombiana vigente y criterios clínicos publicados. No aplica para Brasil, EE.UU., EU ni ninguna otra jurisdicción. Para expansión LATAM se requerirá bundle separado por jurisdicción.",
+  "legal_disclaimer": "ESTE BUNDLE NO SUSTITUYE LAS OBLIGACIONES LEGALES de los Prestadores de Servicios de Salud (PSS) ni de las Entidades Administradoras de Planes de Beneficios (EAPB) bajo la Resolución 1888 de 2025, la Ley 2015 de 2020, la Ley 1581 de 2012 ni cualquier otra norma vigente. El bundle implementa controles técnicos que asisten al cumplimiento pero no certifican conformidad ante autoridades. La validación final de conformidad RDA debe realizarse contra el Validador Oficial del MinSalud / Plataforma IHCE. La interpretación jurídica corresponde a los asesores legales de la institución implementadora.",
+  "vertical": "navegacion-clinica-longitudinal",
+  "jurisdiction": "CO",
+  "regulation_dates": {
+    "res_1888_2025_published": "2025-09-15",
+    "res_1888_2025_grace_start": "2025-10-15",
+    "res_1888_2025_mandatory": "2026-04-15",
+    "bundle_effective_from": "2026-04-15",
+    "bundle_review_due": "2026-10-15"
+  },
+  "official_references": {
+    "ihce_guide_url": "https://vulcano.ihcecol.gov.co/",
+    "ihce_package": "minsalud.fhir.co.rda#0.8.1",
+    "fhir_base": "FHIR R4 (4.0.1)",
+    "canonical_base": "https://fhir.minsalud.gov.co/rda/",
+    "core_co_guide": "https://co.fhir.guide/core/"
+  },
+  "regulations_encoded": [
+    {
+      "citation": "Resolución 1888 de 2025 (MinSalud Colombia)",
+      "url": "https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%201888%20de%202025.pdf",
+      "scope": "RDA obligatorio · IHCE · HL7 FHIR R4 · TLS 1.3 + AES-256",
+      "package": "arhiax.nauta.co.res_1888_2025"
+    },
+    {
+      "citation": "Resolución 866 de 2021 (MinSalud Colombia)",
+      "scope": "Datos clínicos relevantes para interoperabilidad · Catálogos nacionales",
+      "package": "arhiax.nauta.co.res_1888_2025 (incorporado por referencia)"
+    },
+    {
+      "citation": "Ley 2015 de 2020",
+      "scope": "Marco legal de historia clínica interoperable nacional",
+      "package": "arhiax.nauta.co.habeas_data (incorporado)"
+    },
+    {
+      "citation": "Ley 1581 de 2012 + Decreto 1377 de 2013",
+      "scope": "Habeas Data · Art. 5 datos sensibles · Art. 8 revocación",
+      "package": "arhiax.nauta.co.habeas_data"
+    },
+    {
+      "citation": "Decreto 4725 de 2005 (INVIMA)",
+      "scope": "Software como Dispositivo Médico · Régimen sanitario",
+      "package": "arhiax.nauta.co.decreto_4725_2005"
+    }
+  ],
+  "clinical_criteria_encoded": [
+    {
+      "citation": "Graus F, Titulaer MJ, Balu R, et al. A clinical approach to diagnosis of autoimmune encephalitis. Lancet Neurol. 2016;15:391-404.",
+      "doi": "10.1016/S1474-4422(15)00401-9",
+      "scope": "Criterios diagnósticos de encefalitis autoinmune: possible, probable (anti-NMDAR, encefalitis límbica, ADEM, Bickerstaff), definite",
+      "package": "arhiax.nauta.clinical.graus_2016",
+      "fidelity_note": "Algoritmo modelado en los tres niveles del paper original. Tablas 1, 2 y 3 del Graus 2016 codificadas en reglas Rego separadas."
+    }
+  ],
+  "triz_policies_encoded": [
+    "P-01 · Routing prohibido a treating-physician (TR-032/CT-02)",
+    "P-02 · Umbrales institucionales externalizados (TR-032/CT-03)",
+    "P-03 · Monotonicidad de overlays (TR-032/CT-04)",
+    "P-04 · Evaluación de consentimiento granular (TR-032/CT-06)",
+    "P-05 · Atestación precede acción (TR-032/CT-07)",
+    "P-06 · Inmutabilidad del bundle base (TR-032/CT-05)",
+    "P-07 · Registro continuo · Notificación selectiva (TR-032/CF-03)"
+  ],
+  "doctrine_reference": "ARHIAX Governex Thinking · Bifurcación epistémica · El fenómeno precede al agente",
+  "doctrinal_positioning": "Nauta produce únicamente artefactos del tipo CompositionPatientStatementRDA (RDA Paciente) — donde el autor formal del documento es el paciente mismo. Nauta NUNCA produce CompositionAmbulatoryRDA, CompositionHospitalizationRDA ni CompositionEmergencyRDA, los cuales tienen como autor formal a un profesional de salud y constituyen actos clínicos bajo Decreto 4725/2005. Esta separación es estructural, no narrativa.",
+  "atk_outcomes_used": ["PERMIT", "DENY", "ESCALATE", "MODIFY", "AUDIT", "SUSPEND"],
+  "authors": ["Sinergia Consulting Group S.A.S.", "Architect: Ray Miller"],
+  "license": "Proprietary · Internal use Sinergia + licensed institutions. Base layer (Graus 2016 codification) intended for open-source release under CC-BY-SA 4.0 in v0.3.",
+  "kill_critic_notes_addressed": [
+    "v0.1 declaraba conformidad RDA sin validar contra perfiles oficiales · v0.2 referencia canonical URLs reales",
+    "v0.1 usaba LOINC 26466-4 sin verificación · v0.2 delega a catálogos oficiales sin codificar valores específicos",
+    "v0.1 simplificaba Graus a 'possible' · v0.2 codifica los tres niveles",
+    "v0.1 sin FMEA · v0.2 incluye análisis de modos de falla inline",
+    "v0.1 Provenance sub-especificado · v0.2 define formato y firma criptográfica",
+    "v0.1 asumía runtime · v0.2 documenta contract en docs/runtime-contract.md",
+    "v0.1 sin test integral · v0.2 incluye tests/integration_test.rego"
+  ]
+}

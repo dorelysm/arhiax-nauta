@@ -1,0 +1,22 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Runtime/build outputs
+node_modules/
+dist/
+coverage/
+*.log
+nauta-policy-bundle.tar.gz
+
+# Secrets/local env
+.env
+.env.*
+!.env.example
+
+# Python transient files
+__pycache__/
+*.pyc
+.pytest_cache/

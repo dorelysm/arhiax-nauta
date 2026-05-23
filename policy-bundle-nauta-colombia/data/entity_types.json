@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "description": "Clasificación de entidades del sistema de salud colombiano relevantes a Nauta. Roles alineados con CodeSystem REPShealthcarePositions y nomenclatura SOGC.",
+    "version": "0.2.0",
+    "source_minsalud": "https://vulcano.ihcecol.gov.co/CodeSystem-REPShealthcarePositions.html"
+  },
+  "institution_types": {
+    "ips_alta_complejidad": {
+      "label": "IPS de Alta Complejidad",
+      "regulatory_basis": "Decreto 1011/2006 · SOGC",
+      "reps_required": true,
+      "nauta_eligibility": "primary_beachhead",
+      "a4_eligible": true
+    },
+    "ips_mediana_complejidad": {
+      "label": "IPS de Mediana Complejidad",
+      "regulatory_basis": "Decreto 1011/2006",
+      "reps_required": true,
+      "nauta_eligibility": "primary",
+      "a4_eligible": true
+    },
+    "ips_baja_complejidad": {
+      "label": "IPS de Baja Complejidad",
+      "regulatory_basis": "Decreto 1011/2006",
+      "reps_required": true,
+      "nauta_eligibility": "community_tier_only",
+      "a4_eligible": false
+    },
+    "eapb_contributiva": {
+      "label": "EAPB Régimen Contributivo (antes EPS Contributiva)",
+      "regulatory_basis": "Ley 100/1993 + Ley 1751/2015",
+      "nauta_eligibility": "wave_4",
+      "a4_eligible": true
+    },
+    "eapb_subsidiada": {
+      "label": "EAPB Régimen Subsidiado",
+      "regulatory_basis": "Ley 100/1993",
+      "nauta_eligibility": "wave_5_public_contract",
+      "a4_eligible": false
+    },
+    "arl_medicina_laboral": {
+      "label": "ARL · Administradora de Riesgos Laborales",
+      "regulatory_basis": "Ley 1562/2012",
+      "nauta_eligibility": "excluded_by_default",
+      "_doctrinal_note": "Exclusión default en consent.exclusions por riesgo de uso discriminatorio en evaluaciones de incapacidad. Paciente debe opt-in explícitamente."
+    }
+  },
+  "actor_roles": {
+    "patient": {
+      "permissions": ["read_own_graph", "modify_consent", "revoke_authorization", "request_export", "arco_request"],
+      "_doctrinal_note": "Titular según Ley 1581/2012. Soberanía total sobre su información."
+    },
+    "patient_authorized_representative": {
+      "permissions": ["read_authorized_graph", "request_export_on_behalf"],
+      "_doctrinal_note": "Aplicable para menores de edad o pacientes en incapacidad. Requiere documento legal de representación."
+    },
+    "clinical_navigator": {
+      "permissions": ["read_assigned_graph", "receive_cds_hook", "submit_feedback_calibration", "request_transfer_to_specialist"],
+      "_doctrinal_note": "Figura humana de la IPS. Receptor único de notificaciones clínicas de Nauta. Materializa el Principio 24 (Mediador) TRIZ.",
+      "reps_position_code_examples": ["enfermero_profesional", "auxiliar_enfermeria_navegacion", "trabajador_social_clinico"]
+    },
+    "treating_physician": {
+      "permissions": ["read_within_encounter", "write_clinical_note"],
+      "restrictions": [
+        "cannot_receive_direct_cds_hook_from_nauta",
+        "cannot_be_target_role_in_notification"
+      ],
+      "_doctrinal_note": "Decisor clínico. Nauta NUNCA se dirige directamente. Toda mediación pasa por clinical_navigator. (TR-032/CT-02 · Decreto 4725/2005)"
+    },
+    "medical_director": {
+      "permissions": ["approve_overlay", "audit_institutional_outcomes", "configure_institutional_thresholds", "sign_a4_optin"],
+      "_doctrinal_note": "Aprobación obligatoria para deploy_overlay (HIC-2). Firma A4 enabling."
+    },
+    "data_protection_officer": {
+      "permissions": ["review_consent_policies", "audit_sensitive_access", "approve_overlay_data_protection", "sign_a4_optin"],
+      "_doctrinal_note": "Oficial de protección de datos según Decreto 1377/2013. Firma obligatoria para A4 enabling y deploy_overlay (HIC-2)."
+    },
+    "auditor": {
+      "permissions": ["verify_ledger", "read_attestation_records", "export_compliance_report"],
+      "_doctrinal_note": "Bifurcación epistémica (CF-01). Auditor estructuralmente independiente del constructor. No participa en flujos operacionales."
+    },
+    "constructor": {
+      "permissions": ["execute_policy_evaluation", "produce_bundle_patient_statement", "emit_notification_to_navigator"],
+      "_doctrinal_note": "Bifurcación epistémica (CF-01). Constructor opera; auditor verifica. Identidades epistémicas separadas en el mismo sistema."
+    }
+  },
+  "_kill_critic_v0_1_addressed": "v0.1 mezclaba 'EPS' (terminología antigua) con roles. v0.2 usa nomenclatura EAPB actualizada (Resolución 2275/2023) y alinea roles con REPShealthcarePositions de la Guía RDA."
+}

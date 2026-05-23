@@ -1,0 +1,36 @@
+# ARHIAX Nauta
+
+Repositorio de construcción para **ARHIAX Nauta**, navegador clínico longitudinal de Sinergia Consulting Group. El activo técnico inicial es el bundle de políticas OPA/Rego `policy-bundle-nauta-colombia` v0.2.0, orientado a gobernanza ejecutable, conformidad RDA Colombia, consentimiento granular y contención del perímetro SaMD.
+
+## Estado actual
+
+- Base técnica importada desde `nauta-policy-bundle-v0.2.tar.gz`.
+- Documentación fuente preservada en `references/source-material/`.
+- Bundle original preservado en `references/bundles/`.
+- Plan maestro en `docs/DEVELOPMENT_PLAN.md`.
+- Coordinación con Claude Code Opus 4.7 en `docs/AI_COLLABORATION_OPUS.md`.
+
+## Estructura
+
+```text
+.
+├── policy-bundle-nauta-colombia/   # Políticas Rego, datos, pruebas y contrato runtime
+├── docs/                           # Plan senior, revisión y coordinación multi-IA
+├── references/                     # PDFs, PPTX y bundle original entregado
+├── scripts/                        # Utilidades de validación local
+└── .github/workflows/              # CI de validación OPA
+```
+
+## Validación local
+
+Requiere `opa` instalado en PATH.
+
+```powershell
+.\scripts\validate.ps1
+```
+
+Si `opa` no está instalado, el script falla con instrucciones. La validación completa queda además automatizada en GitHub Actions.
+
+## Doctrina de ingeniería
+
+Nauta **media, no decide**. El repositorio debe preservar tres propiedades: atestación antes de acción, separación constructor/auditor y producción exclusiva de RDA Paciente. Cualquier cambio que debilite esas propiedades debe bloquearse en revisión.

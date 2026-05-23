@@ -92,3 +92,25 @@ test_suspend_rejection_quota_exceeded if {
 		with data.runtime.feedback as {"ips_test": {"rejected_30d": 10}}
 		with data.thresholds.institutional as {"ips_test": {"max_consecutive_rejections": 5}}
 }
+
+# ---- DENY: action_category desconocida (AUT-06) ----
+test_deny_unknown_action_category if {
+	autonomy.deny[_] with input as {
+		"autonomy_level": "A3",
+		"action_id": "act_005",
+		"action_category": "unknown_action",
+		"target_role": "clinical-navigator",
+	}
+		with data.runtime.ledger.records as {"act_005": {"verified": true, "hmac_signature_valid": true, "timestamp": "2026-04-20T10:00:00Z", "actor_id": "agent-1", "payload_hash": "hash"}}
+}
+
+# ---- DENY: ledger sin actor_id (AUT-07) ----
+test_deny_missing_ledger_actor_id if {
+	autonomy.deny[_] with input as {
+		"autonomy_level": "A3",
+		"action_id": "act_006",
+		"action_category": "produce_composition",
+		"target_role": "clinical-navigator",
+	}
+		with data.runtime.ledger.records as {"act_006": {"verified": true, "hmac_signature_valid": true, "timestamp": "2026-04-20T10:00:00Z", "payload_hash": "hash"}}
+}

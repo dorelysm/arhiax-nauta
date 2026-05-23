@@ -144,6 +144,7 @@ describe("evaluate server", () => {
       "X-ARHIAX-Idempotency-Key": "test-key-permit",
       "X-ARHIAX-Institution-Id": fixture.input.requester.institution_id,
     });
+    if (res.status !== 200) console.error("TEST FAILED", res.body);
     assert.equal(res.status, 200);
     assert.equal(res.body.outcome, "PERMIT");
     assert.ok(isUuidv7(res.body.evaluation_id));

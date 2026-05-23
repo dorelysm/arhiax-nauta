@@ -4,7 +4,7 @@ Autor: Claude Opus 4.7
 Fecha: 2026-05-23
 Alcance: catálogo breve de discrepancias detectadas al construir los 9 fixtures (`fixtures/evaluate/*.json`) contra `policy-bundle-nauta-colombia/docs/runtime-contract.md` y los `.rego` del bundle base. No propone cambios a las reglas; describe lo que Codex debe decidir.
 
-## 1. Forma de `input.requester`
+## 1. Forma de `input.requester` [CERRADO]
 
 - `runtime-contract.md` §2 define `requester = { role, institution_id, institution_type }`.
 - Los primeros 5 fixtures (commit Codex `e851404`) usan `requester = { role, id }` con `id` sin namespace.
@@ -12,7 +12,7 @@ Alcance: catálogo breve de discrepancias detectadas al construir los 9 fixtures
 
 Acción sugerida: Codex decide canónico. Mi recomendación: alinear todos los fixtures a la forma del contrato (`institution_id` + `institution_type`) y dejar `id` solo para identificación del actor humano cuando aplique (`requester.actor_id`).
 
-## 2. Catálogo de `action_category`
+## 2. Catálogo de `action_category` [CERRADO]
 
 - `runtime-contract.md` §2 ejemplifica `submit_bundle_to_ihce | data_access | produce_composition | divergence_notification | ...` (con elipsis).
 - Las reglas Rego usan además: `enroll_patient`, `deploy_overlay`, `modify_consent`, `transfer_graph`, `emit_output`.
@@ -20,7 +20,7 @@ Acción sugerida: Codex decide canónico. Mi recomendación: alinear todos los f
 
 Acción sugerida: publicar enum cerrado en el contrato, o agregar regla Rego que rechace `action_category` desconocida (fail-closed). Sin enum, un typo en runtime se traduce en PERMIT silencioso.
 
-## 3. `data.runtime.ledger.records[].actor_id|action_type|payload_hash`
+## 3. `data.runtime.ledger.records[].actor_id|action_type|payload_hash` [CERRADO]
 
 - Contrato §1.1 los documenta como obligatorios.
 - `ledger_recorded()` en `base/autonomy.rego` solo evalúa `verified`, `hmac_signature_valid`, `timestamp`. Los demás campos son verificados solo por el runtime fuera de OPA.
@@ -34,7 +34,7 @@ Acción sugerida: agregar regla AUT-06 que falle si `actor_id` o `payload_hash` 
 
 Acción sugerida: o (a) HD-04 toma en cuenta `scope` y `data_category` antes de SUSPEND, o (b) el contrato deja explícito que toda revocación se trata como global por seguridad.
 
-## 5. `transport.tls_version` y `R1888-04`
+## 5. `transport.tls_version` y `R1888-04` [CERRADO]
 
 - `res-1888-2025/rda_conformance.rego:279` deniega cuando `not input.transport.tls_version == "1.3"`.
 - Los primeros 5 fixtures NO incluyen `transport`. En OPA esto se evalúa como undefined → la negación en la regla colombiana puede comportarse como verdadera o falsa según la versión de Rego y la presencia de `not`. Riesgo de outcome no determinista.

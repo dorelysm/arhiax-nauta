@@ -33,6 +33,20 @@ valid_autonomy_levels := {"A0", "A1", "A2", "A3", "A4"}
 # Nivel de operación por defecto en producción de Nauta
 default_autonomy_level := "A3"
 
+valid_action_categories := {
+	"produce_composition",
+	"data_access",
+	"emit_output",
+	"emit_divergence_notification",
+	"divergence_notification",
+	"submit_bundle_to_ihce",
+	"enroll_patient",
+	"deploy_overlay",
+	"modify_consent",
+	"transfer_graph"
+}
+
+
 # ----------------------------------------------------------------------------
 # Regla AUT-01 · Acción permitida si nivel válido + ledger registrado
 # ----------------------------------------------------------------------------
@@ -100,6 +114,28 @@ suspend[msg] if {
 }
 
 # ----------------------------------------------------------------------------
+# Regla AUT-06 · Catálogo cerrado de action_category
+# FMEA: Un typo en runtime podría producir un PERMIT silencioso si las
+# reglas no hacen match. Fallamos cerrado (fail-closed) con DENY.
+# ----------------------------------------------------------------------------
+deny[msg] if {
+	cat := object.get(input, "action_category", "undefined")
+	not cat in valid_action_categories
+	msg := sprintf("DENY · AUT-06: action_category '%s' desconocida o ausente. Acción rechazada por seguridad (fail-closed).", [cat])
+}
+
+# ----------------------------------------------------------------------------
+# Regla AUT-07 · Verificación estricta de campos del ledger
+# FMEA: La propiedad estructural 'atestación precede acción' implica trazabilidad
+# de quién (actor_id) y qué (payload_hash).
+# ----------------------------------------------------------------------------
+deny[msg] if {
+	rec := data.runtime.ledger.records[input.action_id]
+	missing_required_ledger_fields(rec)
+	msg := sprintf("DENY · AUT-07: Registro ledger para %s incompleto (actor_id o payload_hash ausente).", [input.action_id])
+}
+
+# ----------------------------------------------------------------------------
 # Helper: verificar presencia de registro HMAC en el ledger
 # El ledger es responsabilidad del runtime ARHIAX, no del bundle.
 # Contract documentado en docs/runtime-contract.md
@@ -110,3 +146,9 @@ ledger_recorded(action_id) if {
 	rec.hmac_signature_valid == true
 	rec.timestamp != ""
 }
+
+missing_required_ledger_fields(rec) if { not rec.actor_id }
+missing_required_ledger_fields(rec) if { rec.actor_id == "" }
+missing_required_ledger_fields(rec) if { not rec.payload_hash }
+missing_required_ledger_fields(rec) if { rec.payload_hash == "" }
+

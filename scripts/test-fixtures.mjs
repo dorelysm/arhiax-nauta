@@ -123,6 +123,8 @@ function assertExpected(file, fixture, value) {
     "AUT-03": hasValue(value.autonomy_deny),
     "AUT-04": hasValue(value.autonomy_suspend),
     "AUT-05": hasValue(value.autonomy_suspend),
+    "AUT-06": hasValue(value.autonomy_deny),
+    "AUT-07": hasValue(value.autonomy_deny),
     "HIC-1": hasValue(value.hic_escalate),
     "HIC-3": hasValue(value.hic_escalate),
     "HD-02": hasValue(value.habeas_deny),

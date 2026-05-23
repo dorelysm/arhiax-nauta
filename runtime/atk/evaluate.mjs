@@ -1,6 +1,6 @@
-import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import { resolveOutcome } from "./outcome.mjs";
+import { uuidv7 } from "./evaluation-id.mjs";
 
 export function evaluatePolicyResult(policyResult, options = {}) {
   const startedAt = options.startedAt ?? performance.now();
@@ -8,16 +8,17 @@ export function evaluatePolicyResult(policyResult, options = {}) {
   const finishedAt = options.finishedAt ?? performance.now();
 
   return {
-    evaluation_id: options.evaluationId ?? randomUUID(),
+    evaluation_id: options.evaluationId ?? uuidv7(),
     outcome: decision.outcome,
     reasons: decision.reasons,
+    also_emitted: decision.also_emitted,
     effects: decision.effects,
     latency_ms: Number((finishedAt - startedAt).toFixed(3)),
     policy_result: policyResult,
   };
 }
 
-export function mapEvaluationError(error, evaluationId = randomUUID()) {
+export function mapEvaluationError(error, evaluationId = uuidv7()) {
   const message = error instanceof Error ? error.message : String(error);
 
   return {
@@ -29,6 +30,7 @@ export function mapEvaluationError(error, evaluationId = randomUUID()) {
         message: `DENY · RUNTIME-FAIL-CLOSED: ${message}`,
       },
     ],
+    also_emitted: {},
     effects: {
       audit: [],
     },

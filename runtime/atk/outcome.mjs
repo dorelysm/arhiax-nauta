@@ -17,7 +17,7 @@ function collect(policyResult, fields) {
 }
 
 export function resolveOutcome(policyResult) {
-  const reasons = {
+  const buckets = {
     SUSPEND: collect(policyResult, ["autonomy_suspend", "habeas_suspend"]),
     DENY: collect(policyResult, ["autonomy_deny", "res_deny", "habeas_deny", "samd_deny"]),
     ESCALATE: collect(policyResult, ["hic_escalate", "samd_escalate"]),
@@ -31,14 +31,24 @@ export function resolveOutcome(policyResult) {
         : [],
   };
 
-  const outcome = PRECEDENCE.find((candidate) => reasons[candidate].length > 0) || "DENY";
+  const outcome = PRECEDENCE.find((candidate) => buckets[candidate].length > 0) || "DENY";
+
+  const also_emitted = {};
+  for (const candidate of PRECEDENCE) {
+    if (candidate === outcome) continue;
+    if (candidate === "AUDIT") continue;
+    if (buckets[candidate].length > 0) {
+      also_emitted[candidate] = buckets[candidate];
+    }
+  }
 
   return {
     outcome,
     precedence: PRECEDENCE,
-    reasons: reasons[outcome],
+    reasons: buckets[outcome],
+    also_emitted,
     effects: {
-      audit: reasons.AUDIT,
+      audit: buckets.AUDIT,
     },
   };
 }

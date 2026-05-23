@@ -43,4 +43,39 @@ describe("resolveOutcome", () => {
     assert.equal(result.outcome, "DENY");
     assert.deepEqual(result.reasons, []);
   });
+
+  it("exposes lower-precedence buckets that also fired in also_emitted", () => {
+    const result = resolveOutcome({
+      autonomy_allow: true,
+      autonomy_deny: { "deny message": true },
+      hic_escalate: { "escalate message": true },
+      habeas_suspend: { "suspend message": true },
+    });
+
+    assert.equal(result.outcome, "SUSPEND");
+    assert.ok(result.also_emitted.DENY, "DENY bucket should appear in also_emitted");
+    assert.equal(result.also_emitted.DENY[0].message, "deny message");
+    assert.ok(result.also_emitted.ESCALATE, "ESCALATE bucket should appear in also_emitted");
+    assert.equal(result.also_emitted.PERMIT[0].source, "allow");
+  });
+
+  it("omits the applied outcome from also_emitted", () => {
+    const result = resolveOutcome({
+      autonomy_deny: { "deny message": true },
+    });
+
+    assert.equal(result.outcome, "DENY");
+    assert.equal(result.also_emitted.DENY, undefined);
+  });
+
+  it("never lists AUDIT in also_emitted; AUDIT lives only in effects.audit", () => {
+    const result = resolveOutcome({
+      autonomy_deny: { "deny message": true },
+      samd_audit: { "boundary event": true },
+    });
+
+    assert.equal(result.outcome, "DENY");
+    assert.equal(result.also_emitted.AUDIT, undefined);
+    assert.equal(result.effects.audit[0].message, "boundary event");
+  });
 });

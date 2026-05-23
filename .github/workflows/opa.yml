@@ -9,6 +9,8 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
       - name: Checkout
@@ -24,8 +26,8 @@ jobs:
       - name: Formatting diff
         run: opa fmt --diff policy-bundle-nauta-colombia
 
-      - name: Parse
-        run: opa parse policy-bundle-nauta-colombia
+      - name: Static check
+        run: opa check policy-bundle-nauta-colombia
 
       - name: Test
         run: opa test policy-bundle-nauta-colombia

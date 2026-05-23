@@ -4,23 +4,31 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Get-Command opa -ErrorAction SilentlyContinue)) {
-    Write-Error "OPA no está instalado o no está en PATH. Instala OPA y vuelve a ejecutar: .\scripts\validate.ps1"
+$OpaCommand = Get-Command opa -ErrorAction SilentlyContinue
+if (-not $OpaCommand) {
+    $TempOpa = Join-Path $env:TEMP "opa_windows_amd64.exe"
+    if (-not (Test-Path $TempOpa)) {
+        Write-Host "OPA no está en PATH. Descargando binario temporal para validación local..."
+        Invoke-WebRequest -Uri "https://openpolicyagent.org/downloads/latest/opa_windows_amd64.exe" -OutFile $TempOpa
+    }
+    $Opa = $TempOpa
+} else {
+    $Opa = $OpaCommand.Source
 }
 
 Write-Host "==> OPA version"
-opa version
+& $Opa version
 
 Write-Host "==> Formatting check"
-opa fmt --diff $BundlePath
+& $Opa fmt --diff $BundlePath
 
-Write-Host "==> Parse"
-opa parse $BundlePath
+Write-Host "==> Static check"
+& $Opa check $BundlePath
 
 Write-Host "==> Tests"
-opa test $BundlePath
+& $Opa test $BundlePath
 
 Write-Host "==> Build"
-opa build $BundlePath -o nauta-policy-bundle.tar.gz
+& $Opa build $BundlePath -o nauta-policy-bundle.tar.gz
 
 Write-Host "Validación completada."

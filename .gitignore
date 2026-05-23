@@ -3,6 +3,7 @@
 Thumbs.db
 .vscode/
 .idea/
+.claude/
 
 # Runtime/build outputs
 node_modules/

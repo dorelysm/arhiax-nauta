@@ -1,0 +1,81 @@
+{
+  "expected_outcome": {
+    "outcome": "SUSPEND",
+    "primary_rule": "HD-04",
+    "rationale": "Existe política granular_explicit firmada, pero fue revocada antes del access_timestamp. La regla HD-04 emite SUSPEND explícito y tiene precedencia sobre cualquier PERMIT/AUDIT subsecuente.",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0003",
+    "action_category": "data_access",
+    "autonomy_level": "A3",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T11:00:00-05:00",
+    "access_timestamp": "2026-05-23T11:00:00-05:00",
+    "access_purpose": "longitudinal_coordination",
+    "data_category": "hiv_status",
+    "patient_id": "pt-co-cc-3030303030",
+    "patient_id_hash": "sha256:de44...7c",
+    "requester": {
+      "role": "clinical-navigator",
+      "id": "nav-ips-husi-bog-001"
+    },
+    "institution": {
+      "id": "ips_husi_bog",
+      "authorization_status": "active",
+      "overlay_status": "calibrated"
+    },
+    "consent": {
+      "granted": true
+    },
+    "output": {
+      "label": "narrative_organization",
+      "audience": "clinical-navigator",
+      "target_role": "clinical-navigator",
+      "contains_clinical_content": true,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": true
+    },
+    "divergence_severity": "low"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0003": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T10:59:59-05:00"
+          }
+        }
+      },
+      "feedback": {
+        "ips_husi_bog": { "rejected_30d": 0 }
+      }
+    },
+    "consent": {
+      "policies": {
+        "pt-co-cc-3030303030": [
+          {
+            "requester_role": "clinical-navigator",
+            "data_category": "hiv_status",
+            "purpose": "longitudinal_coordination",
+            "status": "revoked",
+            "consent_type": "granular_explicit",
+            "signed_timestamp": "2026-02-10T09:00:00-05:00",
+            "revoked_timestamp": "2026-05-20T17:30:00-05:00"
+          }
+        ]
+      },
+      "revocations": {
+        "pt-co-cc-3030303030": {
+          "timestamp": "2026-05-20T17:30:00-05:00",
+          "reason": "patient_revocation",
+          "scope": "global"
+        }
+      },
+      "exclusions": {}
+    }
+  }
+}

@@ -17,8 +17,6 @@ import future.keywords.if
 import future.keywords.in
 
 default allow := false
-default escalate := false
-default suspend := false
 
 # ----------------------------------------------------------------------------
 # NIVELES DE AUTONOMÍA NAUTA (derivados del ATK ARHIAX)
@@ -39,9 +37,9 @@ default_autonomy_level := "A3"
 # Regla AUT-01 · Acción permitida si nivel válido + ledger registrado
 # ----------------------------------------------------------------------------
 allow if {
-    input.autonomy_level in valid_autonomy_levels
-    input.autonomy_level != "A4"
-    ledger_recorded(input.action_id)
+	input.autonomy_level in valid_autonomy_levels
+	input.autonomy_level != "A4"
+	ledger_recorded(input.action_id)
 }
 
 # A4 requiere opt-in explícito de la IPS porque persiste grafo longitudinal
@@ -49,10 +47,10 @@ allow if {
 # Mitigación: opt-in A4 se firma por director médico Y oficial de protección
 # de datos, no por sysadmin (validado en pipeline de deploy).
 allow if {
-    input.autonomy_level == "A4"
-    input.institution.a4_enabled == true
-    input.institution.a4_signed_by_dpo == true
-    ledger_recorded(input.action_id)
+	input.autonomy_level == "A4"
+	input.institution.a4_enabled == true
+	input.institution.a4_signed_by_dpo == true
+	ledger_recorded(input.action_id)
 }
 
 # ----------------------------------------------------------------------------
@@ -63,8 +61,8 @@ allow if {
 # regulatorio severo.
 # ----------------------------------------------------------------------------
 deny[msg] if {
-    input.target_role == "treating-physician"
-    msg := "DENY · TR-032/P-01: Nauta NO puede dirigirse directamente a treating-physician. Routing obligatorio vía clinical-navigator. (Régimen sanitario Decreto 4725/2005)"
+	input.target_role == "treating-physician"
+	msg := "DENY · TR-032/P-01: Nauta NO puede dirigirse directamente a treating-physician. Routing obligatorio vía clinical-navigator. (Régimen sanitario Decreto 4725/2005)"
 }
 
 # ----------------------------------------------------------------------------
@@ -74,8 +72,8 @@ deny[msg] if {
 # constructor-auditor se rompe. Esta es la propiedad estructural del sistema.
 # ----------------------------------------------------------------------------
 deny[msg] if {
-    not ledger_recorded(input.action_id)
-    msg := sprintf("DENY · TR-032/P-05: Acción %s no pre-registrada en ledger HMAC. La atestación debe preceder a la acción. (Bifurcación epistémica)", [input.action_id])
+	not ledger_recorded(input.action_id)
+	msg := sprintf("DENY · TR-032/P-05: Acción %s no pre-registrada en ledger HMAC. La atestación debe preceder a la acción. (Bifurcación epistémica)", [input.action_id])
 }
 
 # ----------------------------------------------------------------------------
@@ -84,9 +82,9 @@ deny[msg] if {
 # falsos positivos que erosionen confianza institucional → alert fatigue.
 # ----------------------------------------------------------------------------
 suspend[msg] if {
-    input.institution.overlay_status == "uncalibrated"
-    input.divergence_severity == "critical"
-    msg := "SUSPEND · Divergencia crítica con overlay no calibrado. Revisión humana obligatoria antes de continuar emisión de notificaciones."
+	input.institution.overlay_status == "uncalibrated"
+	input.divergence_severity == "critical"
+	msg := "SUSPEND · Divergencia crítica con overlay no calibrado. Revisión humana obligatoria antes de continuar emisión de notificaciones."
 }
 
 # ----------------------------------------------------------------------------
@@ -96,9 +94,9 @@ suspend[msg] if {
 # Esto implementa el feedback loop de calibración local (TR-032/CT-03).
 # ----------------------------------------------------------------------------
 suspend[msg] if {
-    rejected_count := data.runtime.feedback[input.institution.id].rejected_30d
-    rejected_count > data.thresholds.institutional[input.institution.id].max_consecutive_rejections
-    msg := sprintf("SUSPEND · IPS %s superó cuota de rechazos (%d > umbral). Suspender notificaciones hasta recalibración.", [input.institution.id, rejected_count])
+	rejected_count := data.runtime.feedback[input.institution.id].rejected_30d
+	rejected_count > data.thresholds.institutional[input.institution.id].max_consecutive_rejections
+	msg := sprintf("SUSPEND · IPS %s superó cuota de rechazos (%d > umbral). Suspender notificaciones hasta recalibración.", [input.institution.id, rejected_count])
 }
 
 # ----------------------------------------------------------------------------
@@ -107,8 +105,8 @@ suspend[msg] if {
 # Contract documentado en docs/runtime-contract.md
 # ----------------------------------------------------------------------------
 ledger_recorded(action_id) if {
-    rec := data.runtime.ledger.records[action_id]
-    rec.verified == true
-    rec.hmac_signature_valid == true
-    rec.timestamp != ""
+	rec := data.runtime.ledger.records[action_id]
+	rec.verified == true
+	rec.hmac_signature_valid == true
+	rec.timestamp != ""
 }

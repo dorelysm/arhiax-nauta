@@ -1,4 +1,5 @@
 {
+  "entity_types": {
   "_meta": {
     "description": "Clasificación de entidades del sistema de salud colombiano relevantes a Nauta. Roles alineados con CodeSystem REPShealthcarePositions y nomenclatura SOGC.",
     "version": "0.2.0",
@@ -85,4 +86,5 @@
     }
   },
   "_kill_critic_v0_1_addressed": "v0.1 mezclaba 'EPS' (terminología antigua) con roles. v0.2 usa nomenclatura EAPB actualizada (Resolución 2275/2023) y alinea roles con REPShealthcarePositions de la Guía RDA."
+  }
 }

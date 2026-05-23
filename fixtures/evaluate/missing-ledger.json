@@ -1,0 +1,59 @@
+{
+  "expected_outcome": {
+    "outcome": "DENY",
+    "primary_rule": "AUT-03",
+    "rationale": "La acción no tiene registro HMAC pre-evaluación en `data.runtime.ledger.records`. La bifurcación epistémica exige atestación antes de ejecución (TR-032/CT-07/P-05). DENY es estricto: ni AUDIT ni ESCALATE pueden compensar la ausencia de ledger.",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0005",
+    "action_category": "produce_composition",
+    "autonomy_level": "A2",
+    "target_composition_profile": "https://fhir.minsalud.gov.co/rda/StructureDefinition/CompositionPatientStatementRDA",
+    "target_bundle_profile": "https://fhir.minsalud.gov.co/rda/StructureDefinition/BundlePatientStatementRDA",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T13:00:00-05:00",
+    "patient_id": "pt-co-cc-5050505050",
+    "patient_id_hash": "sha256:11ab...9e",
+    "requester": {
+      "role": "clinical-navigator",
+      "id": "nav-ips-cgn-baq-002"
+    },
+    "institution": {
+      "id": "ips_cgn_baq",
+      "authorization_status": "active",
+      "overlay_status": "calibrated"
+    },
+    "composition": {
+      "author": [
+        {
+          "type": "Patient",
+          "identifier": {
+            "system": "https://fhir.minsalud.gov.co/rda/CodeSystem/ColombianPersonIdentifier",
+            "value": "5050505050"
+          }
+        }
+      ]
+    },
+    "output": {
+      "label": "narrative_organization",
+      "audience": "clinical-navigator",
+      "target_role": "clinical-navigator",
+      "contains_clinical_content": true,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": true
+    },
+    "divergence_severity": "low"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator"],
+      "ledger": {
+        "records": {}
+      },
+      "feedback": {
+        "ips_cgn_baq": { "rejected_30d": 0 }
+      }
+    }
+  }
+}

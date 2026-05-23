@@ -1,0 +1,64 @@
+{
+  "expected_outcome": {
+    "outcome": "SUSPEND",
+    "primary_rule": "AUT-04",
+    "rationale": "Se detecta divergencia crítica pero el overlay institucional está en estado uncalibrated. La regla AUT-04 obliga a SUSPEND hasta revisión humana, con precedencia sobre cualquier PERMIT/AUDIT subsecuente.",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0004",
+    "action_category": "emit_divergence_notification",
+    "autonomy_level": "A3",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T12:05:00-05:00",
+    "patient_id": "pt-co-cc-4040404040",
+    "patient_id_hash": "sha256:ff09...3a",
+    "requester": {
+      "role": "clinical-navigator",
+      "id": "nav-ips-new-001"
+    },
+    "institution": {
+      "id": "ips_new_pilot",
+      "authorization_status": "active",
+      "overlay_status": "uncalibrated"
+    },
+    "output": {
+      "label": "divergence_detection",
+      "audience": "clinical-navigator",
+      "target_role": "clinical-navigator",
+      "contains_clinical_content": true,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": true,
+      "severity": "critical",
+      "referenced_criteria": {
+        "citation": "Graus F, et al. Lancet Neurol 2016;15:391-404.",
+        "publication_doi": "10.1016/S1474-4422(15)00401-9"
+      }
+    },
+    "divergence_severity": "critical"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0004": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T12:04:59-05:00"
+          }
+        }
+      },
+      "feedback": {
+        "ips_new_pilot": { "rejected_30d": 0 }
+      }
+    },
+    "thresholds": {
+      "institutional": {
+        "ips_new_pilot": {
+          "max_consecutive_rejections": 5
+        }
+      }
+    }
+  }
+}

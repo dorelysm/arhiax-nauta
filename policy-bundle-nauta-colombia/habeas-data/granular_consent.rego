@@ -20,9 +20,9 @@
 
 package arhiax.nauta.co.habeas_data
 
+import future.keywords.contains
 import future.keywords.if
 import future.keywords.in
-import future.keywords.contains
 
 default allow := false
 
@@ -42,18 +42,18 @@ default allow := false
 # ----------------------------------------------------------------------------
 
 sensitive_clinical_categories := {
-    "mental_health",
-    "psychiatric_history",
-    "reproductive_health",
-    "sexual_health",
-    "hiv_status",
-    "std_status",
-    "genetic_data",
-    "substance_use_disorder",
-    "gender_identity",
-    "sexual_orientation",
-    "intellectual_disability",
-    "child_adolescent_data"
+	"mental_health",
+	"psychiatric_history",
+	"reproductive_health",
+	"sexual_health",
+	"hiv_status",
+	"std_status",
+	"genetic_data",
+	"substance_use_disorder",
+	"gender_identity",
+	"sexual_orientation",
+	"intellectual_disability",
+	"child_adolescent_data",
 }
 
 # ----------------------------------------------------------------------------
@@ -72,24 +72,24 @@ sensitive_clinical_categories := {
 # ----------------------------------------------------------------------------
 
 allow if {
-    matching_consent_exists
-    not consent_revoked_at(input.access_timestamp)
-    not purpose_explicitly_excluded
-    actor_role_authorized
+	matching_consent_exists
+	not consent_revoked_at(input.access_timestamp)
+	not purpose_explicitly_excluded
+	actor_role_authorized
 }
 
 matching_consent_exists if {
-    some policy in data.consent.policies[input.patient_id]
-    policy.requester_role == input.requester.role
-    policy.data_category == input.data_category
-    policy.purpose == input.access_purpose
-    policy.status == "active"
-    policy.signed_timestamp != ""
-    time.parse_rfc3339_ns(policy.signed_timestamp) < time.parse_rfc3339_ns(input.access_timestamp)
+	some policy in data.consent.policies[input.patient_id]
+	policy.requester_role == input.requester.role
+	policy.data_category == input.data_category
+	policy.purpose == input.access_purpose
+	policy.status == "active"
+	policy.signed_timestamp != ""
+	time.parse_rfc3339_ns(policy.signed_timestamp) < time.parse_rfc3339_ns(input.access_timestamp)
 }
 
 actor_role_authorized if {
-    input.requester.role in data.runtime.authorized_roles
+	input.requester.role in data.runtime.authorized_roles
 }
 
 # ----------------------------------------------------------------------------
@@ -102,17 +102,17 @@ actor_role_authorized if {
 # ----------------------------------------------------------------------------
 
 deny[msg] if {
-    input.data_category in sensitive_clinical_categories
-    not has_granular_explicit_consent
-    msg := sprintf("DENY · HD-02 · Ley 1581 Art. 6: Categoría sensible '%s' requiere autorización granular explícita. Bloque (blanket consent) NO aceptado.", [input.data_category])
+	input.data_category in sensitive_clinical_categories
+	not has_granular_explicit_consent
+	msg := sprintf("DENY · HD-02 · Ley 1581 Art. 6: Categoría sensible '%s' requiere autorización granular explícita. Bloque (blanket consent) NO aceptado.", [input.data_category])
 }
 
 has_granular_explicit_consent if {
-    some policy in data.consent.policies[input.patient_id]
-    policy.data_category == input.data_category
-    policy.consent_type == "granular_explicit"
-    policy.signed_timestamp != ""
-    policy.status == "active"
+	some policy in data.consent.policies[input.patient_id]
+	policy.data_category == input.data_category
+	policy.consent_type == "granular_explicit"
+	policy.signed_timestamp != ""
+	policy.status == "active"
 }
 
 # ----------------------------------------------------------------------------
@@ -128,22 +128,22 @@ has_granular_explicit_consent if {
 # ----------------------------------------------------------------------------
 
 purpose_explicitly_excluded if {
-    some exclusion in data.consent.exclusions[input.patient_id]
-    exclusion.data_category == input.data_category
-    exclusion.excluded_requester_type == input.requester.institution_type
-    exclusion.status == "active"
+	some exclusion in data.consent.exclusions[input.patient_id]
+	exclusion.data_category == input.data_category
+	exclusion.excluded_requester_type == input.requester.institution_type
+	exclusion.status == "active"
 }
 
 purpose_explicitly_excluded if {
-    some exclusion in data.consent.exclusions[input.patient_id]
-    exclusion.data_category == input.data_category
-    exclusion.excluded_purpose == input.access_purpose
-    exclusion.status == "active"
+	some exclusion in data.consent.exclusions[input.patient_id]
+	exclusion.data_category == input.data_category
+	exclusion.excluded_purpose == input.access_purpose
+	exclusion.status == "active"
 }
 
 deny[msg] if {
-    purpose_explicitly_excluded
-    msg := sprintf("DENY · HD-03: Exclusión activa del paciente bloquea acceso. Categoría: %s · Receptor: %s · Propósito: %s", [input.data_category, input.requester.institution_type, input.access_purpose])
+	purpose_explicitly_excluded
+	msg := sprintf("DENY · HD-03: Exclusión activa del paciente bloquea acceso. Categoría: %s · Receptor: %s · Propósito: %s", [input.data_category, input.requester.institution_type, input.access_purpose])
 }
 
 # ----------------------------------------------------------------------------
@@ -158,19 +158,20 @@ deny[msg] if {
 # ----------------------------------------------------------------------------
 
 consent_revoked_at(access_ts) if {
-    rev := data.consent.revocations[input.patient_id]
-    rev.timestamp != ""
-    # Si la revocación ocurrió antes o cerca del access (margen 1 segundo)
-    # se considera revocado por protección
-    revocation_ns := time.parse_rfc3339_ns(rev.timestamp)
-    access_ns := time.parse_rfc3339_ns(access_ts)
-    revocation_ns <= access_ns + 1000000000  # 1 segundo en nanosegundos
+	rev := data.consent.revocations[input.patient_id]
+	rev.timestamp != ""
+
+	# Si la revocación ocurrió antes o cerca del access (margen 1 segundo)
+	# se considera revocado por protección
+	revocation_ns := time.parse_rfc3339_ns(rev.timestamp)
+	access_ns := time.parse_rfc3339_ns(access_ts)
+	revocation_ns <= access_ns + 1000000000 # 1 segundo en nanosegundos
 }
 
 suspend[msg] if {
-    input.action_category == "data_access"
-    consent_revoked_at(input.access_timestamp)
-    msg := sprintf("SUSPEND · HD-04 · Ley 1581 Art. 8(e): Consentimiento revocado por paciente %s en %s. Suspender hasta nueva autorización.", [input.patient_id, data.consent.revocations[input.patient_id].timestamp])
+	input.action_category == "data_access"
+	consent_revoked_at(input.access_timestamp)
+	msg := sprintf("SUSPEND · HD-04 · Ley 1581 Art. 8(e): Consentimiento revocado por paciente %s en %s. Suspender hasta nueva autorización.", [input.patient_id, data.consent.revocations[input.patient_id].timestamp])
 }
 
 # ----------------------------------------------------------------------------
@@ -183,15 +184,15 @@ suspend[msg] if {
 # ----------------------------------------------------------------------------
 
 escalate[msg] if {
-    input.action_category == "cross_institution_transfer"
-    not input.transfer.patient_explicit_authorization
-    msg := "ESCALATE · HD-05 · Ley 2015/2020: Transferencia entre instituciones requiere autorización específica del paciente con propósito declarado."
+	input.action_category == "cross_institution_transfer"
+	not input.transfer.patient_explicit_authorization
+	msg := "ESCALATE · HD-05 · Ley 2015/2020: Transferencia entre instituciones requiere autorización específica del paciente con propósito declarado."
 }
 
 escalate[msg] if {
-    input.action_category == "cross_institution_transfer"
-    not input.transfer.receiving_institution_reps_active
-    msg := "ESCALATE · HD-05: IPS receptora no habilitada en REPS. Validar antes de transferir."
+	input.action_category == "cross_institution_transfer"
+	not input.transfer.receiving_institution_reps_active
+	msg := "ESCALATE · HD-05: IPS receptora no habilitada en REPS. Validar antes de transferir."
 }
 
 # ----------------------------------------------------------------------------
@@ -209,20 +210,20 @@ escalate[msg] if {
 # ----------------------------------------------------------------------------
 
 arco_request_valid if {
-    input.action_category == "arco_request"
-    input.arco.right in {"access", "update", "rectify", "delete", "object"}
-    input.arco.requester_identity_verified == true
-    input.arco.requester_is_titular_or_authorized == true
+	input.action_category == "arco_request"
+	input.arco.right in {"access", "update", "rectify", "delete", "object"}
+	input.arco.requester_identity_verified == true
+	input.arco.requester_is_titular_or_authorized == true
 }
 
 allow if {
-    arco_request_valid
+	arco_request_valid
 }
 
 deny[msg] if {
-    input.action_category == "arco_request"
-    not arco_request_valid
-    msg := "DENY · HD-06 · Ley 1581 Art. 8: Solicitud ARCO inválida. Verificar identidad del titular y tipo de derecho."
+	input.action_category == "arco_request"
+	not arco_request_valid
+	msg := "DENY · HD-06 · Ley 1581 Art. 8: Solicitud ARCO inválida. Verificar identidad del titular y tipo de derecho."
 }
 
 # ----------------------------------------------------------------------------
@@ -234,18 +235,18 @@ deny[msg] if {
 # ----------------------------------------------------------------------------
 
 audit[record] if {
-    input.data_category in sensitive_clinical_categories
-    allow
-    record := {
-        "action": "sensitive_data_access",
-        "regulatory_basis": "Ley 1581/2012 Art. 5 · Decreto 1377/2013",
-        "patient_id_hash": input.patient_id_hash,
-        "data_category": input.data_category,
-        "requester_role": input.requester.role,
-        "requester_institution": input.requester.institution_id,
-        "purpose": input.access_purpose,
-        "consent_policy_id": input.consent_policy_id,
-        "access_timestamp": input.access_timestamp,
-        "ledger_action_id": input.action_id
-    }
+	input.data_category in sensitive_clinical_categories
+	allow
+	record := {
+		"action": "sensitive_data_access",
+		"regulatory_basis": "Ley 1581/2012 Art. 5 · Decreto 1377/2013",
+		"patient_id_hash": input.patient_id_hash,
+		"data_category": input.data_category,
+		"requester_role": input.requester.role,
+		"requester_institution": input.requester.institution_id,
+		"purpose": input.access_purpose,
+		"consent_policy_id": input.consent_policy_id,
+		"access_timestamp": input.access_timestamp,
+		"ledger_action_id": input.action_id,
+	}
 }

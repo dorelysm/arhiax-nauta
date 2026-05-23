@@ -1,4 +1,5 @@
 {
+  "thresholds": {
   "_meta": {
     "description": "Configurable thresholds for ARHIAX Nauta v0.2 (Colombia). Defaults from clinical literature; institutional overlays override per IPS calibration.",
     "doctrinal_basis": "TR-2026-032 · CT-03 · Principios TRIZ 3 + 25 · Calibración local",
@@ -44,4 +45,5 @@
     }
   },
   "_kill_critic_v0_1_addressed": "v0.1 incluía 'valid_patient_identifier_systems' con URNs inventadas. v0.2 elimina esa lista; la validación de identificadores se delega al CodeSystem oficial ColombianPersonIdentifier referenciado en res_1888_2025/rda_conformance.rego."
+  }
 }

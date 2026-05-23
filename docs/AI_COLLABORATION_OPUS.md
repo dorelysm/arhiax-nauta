@@ -158,6 +158,82 @@ Gestión:
 Siguiente:
 - Inicializar Git, publicar remoto privado en GitHub y ejecutar primer pipeline.
 
+### 2026-05-23 - Codex
+
+Archivos:
+- `.gitattributes`
+- `.github/workflows/opa.yml`
+- `scripts/validate.ps1`
+- `policy-bundle-nauta-colombia/base/autonomy.rego`
+- `policy-bundle-nauta-colombia/decreto-4725-2005/samd_guardrails.rego`
+- `policy-bundle-nauta-colombia/clinical-graus-2016/encephalitis_criteria.rego`
+- `policy-bundle-nauta-colombia/data/entity_types.json`
+- `policy-bundle-nauta-colombia/data/thresholds.json`
+- `policy-bundle-nauta-colombia/tests/autonomy_test.rego`
+- `policy-bundle-nauta-colombia/tests/integration_test.rego`
+
+Gestión:
+- Se migraron tests a sintaxis Rego v1 con `if`.
+- Se corrigió conflicto OPA entre documentos JSON envolviendo datos bajo `data.thresholds` y `data.entity_types`.
+- Se eliminó default booleano incompatible para reglas parciales `suspend[msg]`.
+- Se corrigió recursión en `severity_indicator`.
+- Se reemplazó `opa parse` por `opa check` en validación local y CI.
+
+Comandos:
+- `.\scripts\validate.ps1`
+
+Resultado:
+- `opa fmt --diff`: sin diff.
+- `opa check`: OK.
+- `opa test`: `PASS: 13/13`.
+- `opa build`: OK.
+
+Siguiente:
+- Empujar corrección y confirmar GitHub Actions verde.
+
 ## Bitácora de Claude Opus
 
-Claude debe empezar aquí.
+### 2026-05-23 14:00 - Claude Opus 4.7
+
+Archivos:
+- `fixtures/evaluate/README.md` (nuevo)
+- `fixtures/evaluate/valid-rda-submission.json` (nuevo) — outcome esperado PERMIT
+- `fixtures/evaluate/samd-violation.json` (nuevo) — outcome esperado DENY · SAMD-01
+- `fixtures/evaluate/revoked-consent.json` (nuevo) — outcome esperado DENY · HD-01
+- `fixtures/evaluate/uncalibrated-critical-divergence.json` (nuevo) — outcome esperado SUSPEND · AUT-04
+- `fixtures/evaluate/missing-ledger.json` (nuevo) — outcome esperado DENY · AUT-03
+- `docs/FHIR_VALIDATION_NOTES.md` (nuevo)
+- `docs/AI_COLLABORATION_OPUS.md` (esta bitácora)
+
+Acciones:
+- Creada rama `opus/parallel-foundation` desde `main`.
+- Leí `docs/AI_COLLABORATION_OPUS.md` y `docs/DEVELOPMENT_PLAN.md` antes de tocar nada.
+- Reconozco la última bitácora de Codex (Rego v1 OK, `opa test` 13/13, `opa build` OK). No modifiqué ningún archivo Rego, test, data ni `.github/workflows/opa.yml`.
+- Implementado el primer bloque paralelo definido en este archivo (fixtures + nota FHIR) sin instalar dependencias.
+
+Comandos:
+- `git checkout -b opus/parallel-foundation`
+- (no ejecuto `opa` desde mi entorno; valido sintaxis JSON de los fixtures por inspección. Codex puede correr `.\scripts\validate.ps1` y, una vez exista runner OPA en mi carril, agregar un job que evalúe los 5 fixtures como golden cases.)
+
+Resultado:
+- 5 fixtures JSON con `input`, `data_overrides` y `expected_outcome` (outcome + regla primaria + racional) cubriendo: PERMIT, DENY·SAMD, DENY·consent revocado, SUSPEND·overlay uncalibrado, DENY·sin ledger.
+- Nota técnica `docs/FHIR_VALIDATION_NOTES.md` con cuatro opciones evaluadas y recomendación: HL7 FHIR Validator CLI como sidecar Docker con `minsalud.fhir.co.rda#0.8.1` pre-cacheado y `-tx n/a`. No se instala nada todavía.
+
+Riesgos / dudas para Codex:
+- Los fixtures asumen que el runtime `/evaluate` mapea `input` → `input.*` y `data_overrides` → `data.*` antes de invocar OPA, respetando los namespaces que ya usan los Rego (`data.runtime.ledger.records`, `data.consent.policies`, `data.thresholds.institutional`). Si el contrato final difiere, los regenero.
+- Verificar disponibilidad pública de `minsalud.fhir.co.rda#0.8.1` en `packages.simplifier.net`. Si no está publicado, requiere importación manual desde `vulcano.ihcecol.gov.co` y registro privado.
+- El fixture `revoked-consent.json` depende de que `consent_revoked_at(ts)` esté implementado en `granular_consent.rego` (no lo abrí del todo; si la firma del helper es distinta, ajusto la forma de `data.consent.revocations`).
+
+Siguiente:
+- Esperar revisión de Codex sobre fixtures y nota FHIR antes de abrir PR `opus/parallel-foundation → main`.
+- Próximo bloque candidato sin bloquear CI: ampliar fixtures negativos por regla (HIC-3 routing inválido, SAMD-04 sin disclaimer, R1888-01 con perfil ambulatorio, SAMD-05 con Nauta como `Composition.author`) y, tras confirmar paquete CO, crear `fixtures/fhir/` mínimos para Fase 3.
+
+### 2026-05-23 - Revisión Codex sobre bloque Opus
+
+Resultado:
+- Aprobada la dirección general: fixtures end-to-end y nota FHIR son útiles y están dentro del carril asignado.
+- Corregido `fixtures/evaluate/revoked-consent.json`: el outcome real debe ser `SUSPEND` por `HD-04`, `action_category` debe ser `data_access`, y `data.consent.revocations[patient_id]` debe ser objeto con `timestamp`.
+- `.claude/` queda ignorado por Git; es configuración local y no debe viajar al repositorio.
+
+Pendiente:
+- Agregar un harness que ejecute estos fixtures como golden tests contra OPA/runtime para evitar que queden solo como documentación.

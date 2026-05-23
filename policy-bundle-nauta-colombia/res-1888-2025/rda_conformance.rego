@@ -35,9 +35,9 @@
 
 package arhiax.nauta.co.res_1888_2025
 
+import future.keywords.contains
 import future.keywords.if
 import future.keywords.in
-import future.keywords.contains
 
 # ----------------------------------------------------------------------------
 # CANONICAL URLs OFICIALES (no inventadas)
@@ -93,17 +93,17 @@ codesystem_loinc := "http://loinc.org"
 default may_produce := false
 
 may_produce if {
-    input.target_composition_profile == composition_profile_patient_statement
+	input.target_composition_profile == composition_profile_patient_statement
 }
 
 deny[msg] if {
-    input.action_category == "produce_composition"
-    input.target_composition_profile in {
-        composition_profile_ambulatory,
-        composition_profile_hospitalization,
-        composition_profile_emergency
-    }
-    msg := sprintf("DENY · R1888-01 · Decreto 4725/2005: Nauta NO puede producir %s (constituye acto clínico). Solo CompositionPatientStatementRDA permitido.", [input.target_composition_profile])
+	input.action_category == "produce_composition"
+	input.target_composition_profile in {
+		composition_profile_ambulatory,
+		composition_profile_hospitalization,
+		composition_profile_emergency,
+	}
+	msg := sprintf("DENY · R1888-01 · Decreto 4725/2005: Nauta NO puede producir %s (constituye acto clínico). Solo CompositionPatientStatementRDA permitido.", [input.target_composition_profile])
 }
 
 # ----------------------------------------------------------------------------
@@ -122,35 +122,35 @@ deny[msg] if {
 default bundle_structurally_valid := false
 
 bundle_structurally_valid if {
-    input.bundle.type == "document"
-    has_bundle_profile_declaration
-    has_root_composition
-    has_patient_resource
+	input.bundle.type == "document"
+	has_bundle_profile_declaration
+	has_root_composition
+	has_patient_resource
 }
 
 has_bundle_profile_declaration if {
-    some profile in input.bundle.meta.profile
-    profile == bundle_profile_patient_statement
+	some profile in input.bundle.meta.profile
+	profile == bundle_profile_patient_statement
 }
 
 has_root_composition if {
-    first := input.bundle.entry[0].resource
-    first.resourceType == "Composition"
-    some profile in first.meta.profile
-    profile == composition_profile_patient_statement
+	first := input.bundle.entry[0].resource
+	first.resourceType == "Composition"
+	some profile in first.meta.profile
+	profile == composition_profile_patient_statement
 }
 
 has_patient_resource if {
-    some entry in input.bundle.entry
-    entry.resource.resourceType == "Patient"
-    some profile in entry.resource.meta.profile
-    profile == profile_patient
+	some entry in input.bundle.entry
+	entry.resource.resourceType == "Patient"
+	some profile in entry.resource.meta.profile
+	profile == profile_patient
 }
 
 deny[msg] if {
-    input.action_category == "submit_bundle_to_ihce"
-    not bundle_structurally_valid
-    msg := "DENY · R1888-02: Bundle no conforme estructuralmente al perfil BundlePatientStatementRDA. Verificar tipo='document', meta.profile, Composition raíz y Patient referenciado."
+	input.action_category == "submit_bundle_to_ihce"
+	not bundle_structurally_valid
+	msg := "DENY · R1888-02: Bundle no conforme estructuralmente al perfil BundlePatientStatementRDA. Verificar tipo='document', meta.profile, Composition raíz y Patient referenciado."
 }
 
 # ----------------------------------------------------------------------------
@@ -164,16 +164,16 @@ deny[msg] if {
 # ----------------------------------------------------------------------------
 
 deny[msg] if {
-    input.action_category == "submit_bundle_to_ihce"
-    some entry in input.bundle.entry
-    entry.resource.resourceType == "Patient"
-    not has_valid_patient_identifier(entry.resource)
-    msg := "DENY · R1888-03: Patient debe identificarse con el CodeSystem ColombianPersonIdentifier oficial. Ver: https://vulcano.ihcecol.gov.co/CodeSystem-ColombianPersonIdentifier.html"
+	input.action_category == "submit_bundle_to_ihce"
+	some entry in input.bundle.entry
+	entry.resource.resourceType == "Patient"
+	not has_valid_patient_identifier(entry.resource)
+	msg := "DENY · R1888-03: Patient debe identificarse con el CodeSystem ColombianPersonIdentifier oficial. Ver: https://vulcano.ihcecol.gov.co/CodeSystem-ColombianPersonIdentifier.html"
 }
 
 has_valid_patient_identifier(patient) if {
-    some identifier in patient.identifier
-    identifier.type.coding[_].system == codesystem_person_identifier
+	some identifier in patient.identifier
+	identifier.type.coding[_].system == codesystem_person_identifier
 }
 
 # ----------------------------------------------------------------------------
@@ -195,23 +195,23 @@ has_valid_patient_identifier(patient) if {
 # ----------------------------------------------------------------------------
 
 deny[msg] if {
-    input.action_category == "submit_bundle_to_ihce"
-    some entry in input.bundle.entry
-    entry.resource.resourceType in {"Condition", "Observation", "Procedure", "AllergyIntolerance"}
-    not has_accepted_coding_system(entry.resource)
-    msg := sprintf("DENY · R1888-04: Recurso %s usa coding system fuera de los aceptados por la Guía RDA. Aceptados: ICD10CO, CUPS, SNOMED CT, LOINC.", [entry.resource.resourceType])
+	input.action_category == "submit_bundle_to_ihce"
+	some entry in input.bundle.entry
+	entry.resource.resourceType in {"Condition", "Observation", "Procedure", "AllergyIntolerance"}
+	not has_accepted_coding_system(entry.resource)
+	msg := sprintf("DENY · R1888-04: Recurso %s usa coding system fuera de los aceptados por la Guía RDA. Aceptados: ICD10CO, CUPS, SNOMED CT, LOINC.", [entry.resource.resourceType])
 }
 
 has_accepted_coding_system(resource) if {
-    some coding in resource.code.coding
-    coding.system in accepted_coding_systems
+	some coding in resource.code.coding
+	coding.system in accepted_coding_systems
 }
 
 accepted_coding_systems := {
-    "https://fhir.minsalud.gov.co/rda/CodeSystem/ICD10CO",
-    "https://fhir.minsalud.gov.co/rda/CodeSystem/CUPS",
-    "http://snomed.info/sct",
-    "http://loinc.org"
+	"https://fhir.minsalud.gov.co/rda/CodeSystem/ICD10CO",
+	"https://fhir.minsalud.gov.co/rda/CodeSystem/CUPS",
+	"http://snomed.info/sct",
+	"http://loinc.org",
 }
 
 # ----------------------------------------------------------------------------
@@ -232,38 +232,38 @@ accepted_coding_systems := {
 nauta_agent_identifier := "urn:sinergia:arhiax:nauta"
 
 deny[msg] if {
-    input.action_category == "submit_bundle_to_ihce"
-    not has_signed_nauta_provenance
-    msg := "DENY · R1888-05: Bundle debe incluir Provenance firmado identificando a Nauta como contribuidor (no como autor clínico). Formato JWS ES256."
+	input.action_category == "submit_bundle_to_ihce"
+	not has_signed_nauta_provenance
+	msg := "DENY · R1888-05: Bundle debe incluir Provenance firmado identificando a Nauta como contribuidor (no como autor clínico). Formato JWS ES256."
 }
 
 has_signed_nauta_provenance if {
-    some entry in input.bundle.entry
-    prov := entry.resource
-    prov.resourceType == "Provenance"
-    is_nauta_agent(prov)
-    has_valid_signature(prov)
-    is_contributor_role(prov)
+	some entry in input.bundle.entry
+	prov := entry.resource
+	prov.resourceType == "Provenance"
+	is_nauta_agent(prov)
+	has_valid_signature(prov)
+	is_contributor_role(prov)
 }
 
 is_nauta_agent(provenance) if {
-    some agent in provenance.agent
-    startswith(agent.who.identifier.value, nauta_agent_identifier)
+	some agent in provenance.agent
+	startswith(agent.who.identifier.value, nauta_agent_identifier)
 }
 
 # Provenance debe tener rol "contributor", NUNCA "author" para el Bundle
 # Patient Statement (porque el autor formal del documento es el paciente)
 is_contributor_role(provenance) if {
-    some agent in provenance.agent
-    some coding in agent.type.coding
-    coding.code == "ASSEMBLER"  # FHIR provenance-participant-type code
+	some agent in provenance.agent
+	some coding in agent.type.coding
+	coding.code == "ASSEMBLER" # FHIR provenance-participant-type code
 }
 
 has_valid_signature(provenance) if {
-    some sig in provenance.signature
-    sig.type[_].code == "1.2.840.10065.1.12.1.7"  # ASTM signature meaning code
-    sig.sigFormat == "application/jose"
-    sig.data != ""
+	some sig in provenance.signature
+	sig.type[_].code == "1.2.840.10065.1.12.1.7" # ASTM signature meaning code
+	sig.sigFormat == "application/jose"
+	sig.data != ""
 }
 
 # ----------------------------------------------------------------------------
@@ -275,9 +275,9 @@ has_valid_signature(provenance) if {
 # ----------------------------------------------------------------------------
 
 deny[msg] if {
-    input.action_category == "submit_bundle_to_ihce"
-    not input.transport.tls_version == "1.3"
-    msg := "DENY · R1888-06: Transmisión a IHCE requiere TLS 1.3 (Anexo Técnico Res. 1888/2025)."
+	input.action_category == "submit_bundle_to_ihce"
+	not input.transport.tls_version == "1.3"
+	msg := "DENY · R1888-06: Transmisión a IHCE requiere TLS 1.3 (Anexo Técnico Res. 1888/2025)."
 }
 
 # ----------------------------------------------------------------------------
@@ -288,18 +288,18 @@ deny[msg] if {
 # ----------------------------------------------------------------------------
 
 audit[record] if {
-    input.action_category == "submit_bundle_to_ihce"
-    bundle_structurally_valid
-    record := {
-        "action": "ihce_bundle_submission",
-        "regulatory_basis": "Resolución 1888 de 2025",
-        "composition_profile": composition_profile_patient_statement,
-        "institution_id": input.institution.id,
-        "patient_id_hash": input.patient_id_hash,
-        "submission_timestamp": input.timestamp,
-        "ihce_transaction_id": input.ihce_response.transaction_id,
-        "compliance_status": "submitted_conformant",
-        "tls_version": input.transport.tls_version,
-        "nauta_version": "v0.2"
-    }
+	input.action_category == "submit_bundle_to_ihce"
+	bundle_structurally_valid
+	record := {
+		"action": "ihce_bundle_submission",
+		"regulatory_basis": "Resolución 1888 de 2025",
+		"composition_profile": composition_profile_patient_statement,
+		"institution_id": input.institution.id,
+		"patient_id_hash": input.patient_id_hash,
+		"submission_timestamp": input.timestamp,
+		"ihce_transaction_id": input.ihce_response.transaction_id,
+		"compliance_status": "submitted_conformant",
+		"tls_version": input.transport.tls_version,
+		"nauta_version": "v0.2",
+	}
 }

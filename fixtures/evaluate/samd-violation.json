@@ -1,0 +1,53 @@
+{
+  "expected_outcome": {
+    "outcome": "DENY",
+    "primary_rule": "SAMD-01",
+    "rationale": "El output trae label 'clinical_recommendation', que pertenece a forbidden_output_labels. Emitirlo convertiría a Nauta en SaMD sin habilitación INVIMA (Decreto 4725/2005).",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0002",
+    "action_category": "emit_output",
+    "autonomy_level": "A3",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T10:20:00-05:00",
+    "patient_id": "pt-co-cc-2020202020",
+    "patient_id_hash": "sha256:bb12...91",
+    "requester": {
+      "role": "clinical-navigator",
+      "id": "nav-ips-fsfb-bog-001"
+    },
+    "institution": {
+      "id": "ips_fsfb_bog",
+      "authorization_status": "active",
+      "overlay_status": "calibrated"
+    },
+    "output": {
+      "label": "clinical_recommendation",
+      "audience": "clinical-navigator",
+      "target_role": "clinical-navigator",
+      "contains_clinical_content": true,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": true,
+      "severity": "high"
+    },
+    "divergence_severity": "moderate"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0002": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T10:19:59-05:00"
+          }
+        }
+      },
+      "feedback": {
+        "ips_fsfb_bog": { "rejected_30d": 0 }
+      }
+    }
+  }
+}

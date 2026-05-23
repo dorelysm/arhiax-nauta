@@ -124,12 +124,16 @@ function assertExpected(file, fixture, value) {
     "HIC-3": hasValue(value.hic_escalate),
     "HD-04": hasValue(value.habeas_suspend),
     "R1888-01": hasValue(value.res_deny),
+    "R1888-05": hasValue(value.res_deny),
     "R1888-06": hasValue(value.res_deny),
     "SAMD-01": hasValue(value.samd_deny),
     "SAMD-04": hasValue(value.samd_deny),
     "SAMD-05": hasValue(value.samd_deny),
     "HD-02": hasValue(value.habeas_deny),
+    "HD-03": hasValue(value.habeas_deny),
     "AUT-05": hasValue(value.autonomy_suspend),
+    "SAMD-02": hasValue(value.samd_deny),
+    "SAMD-03": hasValue(value.samd_escalate),
   };
 
   let ok = false;

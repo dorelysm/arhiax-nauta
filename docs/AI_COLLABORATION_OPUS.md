@@ -288,3 +288,41 @@ Resultado de validación:
 
 Decisión:
 - El próximo bloque debe realinear los 5 fixtures iniciales al contrato canónico (`requester.institution_id`, `requester.institution_type`, `transport.tls_version`, hash completo), sin cambiar outcomes esperados.
+
+## Siguiente Bloque Para Opus
+
+### Bloque 3 - Realineación contractual y diseño de outcome aggregator
+
+Regla operativa: Opus escribe localmente y registra la gestión; Codex revisa, valida, commitea y publica.
+
+Objetivo: reducir deuda contractual antes de iniciar runtime ATK.
+
+Tareas:
+
+1. Realinear estos fixtures al contrato canónico sin cambiar su `expected_outcome`:
+   - `fixtures/evaluate/valid-rda-submission.json`
+   - `fixtures/evaluate/samd-violation.json`
+   - `fixtures/evaluate/revoked-consent.json`
+   - `fixtures/evaluate/uncalibrated-critical-divergence.json`
+   - `fixtures/evaluate/missing-ledger.json`
+2. En cada fixture, usar:
+   - `requester.role`
+   - `requester.institution_id`
+   - `requester.institution_type`
+   - `transport.tls_version = "1.3"` cuando el flujo no busque probar transporte inválido.
+   - `transport.cipher_suite = "TLS_AES_256_GCM_SHA384"` cuando aplique.
+   - `patient_id_hash` de 64 hex chars; si no calculas el hash real todavía, no uses `sha256:...`.
+   - ledger con `actor_id`, `action_type` y `payload_hash`.
+3. Crear `docs/OUTCOME_AGGREGATOR_DESIGN.md` con:
+   - precedencia ATK;
+   - consultas Rego actuales por paquete;
+   - propuesta de módulo `arhiax.nauta.base.outcome`;
+   - riesgos de duplicar precedencia en runtime vs. centralizarla en Rego;
+   - recomendación final.
+4. No modificar archivos `.rego` en este bloque.
+5. Ejecutar, si tienes entorno, `node scripts/test-fixtures.mjs`; si no, dejarlo indicado en bitácora para que Codex lo ejecute.
+6. Registrar comandos, archivos y riesgos en esta bitácora.
+
+Siguiente bloque probable después de revisión Codex:
+
+- Implementar `arhiax.nauta.base.outcome` o crear primero skeleton del runtime ATK, según lo que recomiende el diseño.

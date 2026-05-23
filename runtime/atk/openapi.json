@@ -1,0 +1,352 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ARHIAX Nauta ATK · Evaluate API",
+    "version": "0.2.0",
+    "description": "Evaluates an action against the policy-bundle-nauta-colombia. Source of truth for runtime request/response shapes; JSON Schema fragments are emitted from components/schemas via scripts/emit-schemas.mjs and consumed by ajv inside runtime/atk/validator.mjs."
+  },
+  "servers": [
+    { "url": "http://localhost:8080", "description": "Local development" }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "health",
+        "summary": "Liveness probe",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/evaluate": {
+      "post": {
+        "operationId": "evaluate",
+        "summary": "Evaluate an action against the Nauta policy bundle",
+        "parameters": [
+          { "$ref": "#/components/parameters/IdempotencyKey" },
+          { "$ref": "#/components/parameters/InstitutionId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EvaluateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outcome computed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EvaluateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request, missing required header, or unknown body field",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          },
+          "403": {
+            "description": "Institution mismatch",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          },
+          "409": {
+            "description": "Idempotency-Key reused with a different body",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          },
+          "413": {
+            "description": "Payload too large",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          },
+          "422": {
+            "description": "Schema violation",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          },
+          "500": {
+            "description": "Runtime failure (fail-closed DENY envelope)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EvaluateResponse" } } }
+          },
+          "503": {
+            "description": "Dependency unavailable (fail-closed DENY envelope)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EvaluateResponse" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "IdempotencyKey": {
+        "name": "X-ARHIAX-Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": { "type": "string", "minLength": 1, "maxLength": 128 }
+      },
+      "InstitutionId": {
+        "name": "X-ARHIAX-Institution-Id",
+        "in": "header",
+        "required": false,
+        "schema": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    "schemas": {
+      "ActionCategory": {
+        "type": "string",
+        "enum": [
+          "produce_composition",
+          "data_access",
+          "emit_output",
+          "emit_divergence_notification",
+          "divergence_notification",
+          "submit_bundle_to_ihce",
+          "enroll_patient",
+          "deploy_overlay",
+          "modify_consent",
+          "transfer_graph"
+        ]
+      },
+      "AutonomyLevel": { "type": "string", "enum": ["A0", "A1", "A2", "A3", "A4"] },
+      "Severity": { "type": "string", "enum": ["low", "moderate", "high", "critical"] },
+      "Outcome": {
+        "type": "string",
+        "enum": ["SUSPEND", "DENY", "ESCALATE", "MODIFY", "AUDIT", "PERMIT"]
+      },
+      "Requester": {
+        "type": "object",
+        "required": ["role", "institution_id", "institution_type"],
+        "properties": {
+          "role": { "type": "string", "minLength": 1 },
+          "institution_id": { "type": "string", "minLength": 1 },
+          "institution_type": { "type": "string", "minLength": 1 },
+          "actor_id": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "Institution": {
+        "type": "object",
+        "required": ["id", "authorization_status", "overlay_status"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "authorization_status": { "type": "string", "enum": ["active", "suspended", "expired"] },
+          "overlay_status": { "type": "string", "enum": ["calibrated", "uncalibrated"] },
+          "a4_enabled": { "type": "boolean" },
+          "a4_signed_by_dpo": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "Transport": {
+        "type": "object",
+        "required": ["tls_version"],
+        "properties": {
+          "tls_version": { "type": "string", "minLength": 1 },
+          "cipher_suite": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "Output": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string", "minLength": 1 },
+          "audience": { "type": "string" },
+          "target_role": { "type": "string" },
+          "contains_clinical_content": { "type": "boolean" },
+          "routed_via_navigator": { "type": "boolean" },
+          "contains_medical_disclaimer": { "type": "boolean" },
+          "severity": { "$ref": "#/components/schemas/Severity" },
+          "referenced_criteria": {
+            "type": "object",
+            "properties": {
+              "citation": { "type": "string" },
+              "publication_doi": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "EvaluateRequest": {
+        "type": "object",
+        "required": [
+          "action_id",
+          "action_category",
+          "autonomy_level",
+          "target_role",
+          "timestamp",
+          "patient_id",
+          "patient_id_hash",
+          "requester",
+          "institution",
+          "transport"
+        ],
+        "properties": {
+          "action_id": { "type": "string", "minLength": 1 },
+          "action_category": { "$ref": "#/components/schemas/ActionCategory" },
+          "autonomy_level": { "$ref": "#/components/schemas/AutonomyLevel" },
+          "target_role": { "type": "string", "minLength": 1 },
+          "target_composition_profile": { "type": "string" },
+          "target_bundle_profile": { "type": "string" },
+          "timestamp": { "type": "string", "minLength": 1 },
+          "access_timestamp": { "type": "string" },
+          "access_purpose": { "type": "string" },
+          "data_category": { "type": "string" },
+          "patient_id": { "type": "string", "minLength": 1 },
+          "patient_id_hash": { "type": "string", "minLength": 1 },
+          "requester": { "$ref": "#/components/schemas/Requester" },
+          "institution": { "$ref": "#/components/schemas/Institution" },
+          "transport": { "$ref": "#/components/schemas/Transport" },
+          "composition": { "type": "object" },
+          "bundle": { "type": "object" },
+          "output": { "$ref": "#/components/schemas/Output" },
+          "divergence_severity": { "$ref": "#/components/schemas/Severity" },
+          "consent": {
+            "type": "object",
+            "properties": { "granted": { "type": "boolean" } }
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": { "properties": { "action_category": { "const": "data_access" } } },
+            "then": {
+              "required": ["access_timestamp", "access_purpose", "data_category"]
+            }
+          },
+          {
+            "if": { "properties": { "action_category": { "const": "produce_composition" } } },
+            "then": {
+              "required": ["target_composition_profile", "composition"]
+            }
+          },
+          {
+            "if": { "properties": { "action_category": { "const": "submit_bundle_to_ihce" } } },
+            "then": {
+              "required": ["bundle"]
+            }
+          }
+        ]
+      },
+      "Reason": {
+        "type": "object",
+        "required": ["source", "message"],
+        "properties": {
+          "source": { "type": "string" },
+          "message": { "type": "string" },
+          "rule": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "AuditEffect": {
+        "type": "object",
+        "required": ["source", "message"],
+        "properties": {
+          "source": { "type": "string" },
+          "message": { "type": "string" },
+          "rule": { "type": "string" },
+          "record": { "type": "object" }
+        },
+        "additionalProperties": true
+      },
+      "EvaluateResponse": {
+        "type": "object",
+        "required": [
+          "evaluation_id",
+          "outcome",
+          "reasons",
+          "also_emitted",
+          "effects",
+          "latency_ms",
+          "evaluated_at",
+          "policy_bundle_version"
+        ],
+        "properties": {
+          "evaluation_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "outcome": { "$ref": "#/components/schemas/Outcome" },
+          "precedence": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Outcome" }
+          },
+          "reasons": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Reason" }
+          },
+          "also_emitted": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/Reason" }
+            }
+          },
+          "effects": {
+            "type": "object",
+            "required": ["audit"],
+            "properties": {
+              "audit": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/AuditEffect" }
+              }
+            }
+          },
+          "latency_ms": { "type": "number", "minimum": 0 },
+          "evaluated_at": { "type": "string" },
+          "policy_bundle_version": { "type": "string" },
+          "fhir_validation": {
+            "type": ["object", "null"],
+            "properties": {
+              "performed": { "type": "boolean" },
+              "report_uri": { "type": ["string", "null"] },
+              "issues_summary": {
+                "type": ["object", "null"],
+                "properties": {
+                  "fatal": { "type": "integer", "minimum": 0 },
+                  "error": { "type": "integer", "minimum": 0 },
+                  "warning": { "type": "integer", "minimum": 0 },
+                  "information": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          },
+          "policy_result": { "type": "object" }
+        },
+        "additionalProperties": true
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code"],
+            "properties": {
+              "code": { "type": "string" },
+              "evaluation_id": { "type": "string" },
+              "field": { "type": "string" },
+              "details": { "type": "array" },
+              "message": { "type": "string" },
+              "dependencies": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string" },
+          "policy_bundle_version": { "type": "string" }
+        }
+      }
+    }
+  }
+}

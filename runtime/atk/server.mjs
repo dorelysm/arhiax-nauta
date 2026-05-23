@@ -3,7 +3,7 @@ import { performance } from "node:perf_hooks";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
-import { validateEvaluateRequest } from "./schema.mjs";
+import { validateEvaluateRequest } from "./validator.mjs";
 import { Ledger, hashPayload } from "./ledger.mjs";
 import { evaluatePolicyResult, mapEvaluationError } from "./evaluate.mjs";
 import { uuidv7 } from "./evaluation-id.mjs";

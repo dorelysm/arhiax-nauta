@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "EvaluateResponse.json",
+  "title": "EvaluateResponse",
+  "type": "object",
+  "required": [
+    "evaluation_id",
+    "outcome",
+    "reasons",
+    "also_emitted",
+    "effects",
+    "latency_ms",
+    "evaluated_at",
+    "policy_bundle_version"
+  ],
+  "properties": {
+    "evaluation_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "outcome": {
+      "$ref": "Outcome.json"
+    },
+    "precedence": {
+      "type": "array",
+      "items": {
+        "$ref": "Outcome.json"
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "Reason.json"
+      }
+    },
+    "also_emitted": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "$ref": "Reason.json"
+        }
+      }
+    },
+    "effects": {
+      "type": "object",
+      "required": [
+        "audit"
+      ],
+      "properties": {
+        "audit": {
+          "type": "array",
+          "items": {
+            "$ref": "AuditEffect.json"
+          }
+        }
+      }
+    },
+    "latency_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "evaluated_at": {
+      "type": "string"
+    },
+    "policy_bundle_version": {
+      "type": "string"
+    },
+    "fhir_validation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "performed": {
+          "type": "boolean"
+        },
+        "report_uri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "issues_summary": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "fatal": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "error": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "warning": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "information": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "policy_result": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

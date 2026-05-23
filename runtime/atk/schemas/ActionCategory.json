@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ActionCategory.json",
+  "title": "ActionCategory",
+  "type": "string",
+  "enum": [
+    "produce_composition",
+    "data_access",
+    "emit_output",
+    "emit_divergence_notification",
+    "divergence_notification",
+    "submit_bundle_to_ihce",
+    "enroll_patient",
+    "deploy_overlay",
+    "modify_consent",
+    "transfer_graph"
+  ]
+}

@@ -35,6 +35,12 @@ jobs:
       - name: Build bundle
         run: opa build policy-bundle-nauta-colombia -o nauta-policy-bundle.tar.gz
 
+      - name: Install runtime dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Emit JSON Schemas from OpenAPI
+        run: npm run schema:emit
+
       - name: Golden fixtures
         run: node scripts/test-fixtures.mjs
 

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AuditEffect.json",
+  "title": "AuditEffect",
+  "type": "object",
+  "required": [
+    "source",
+    "message"
+  ],
+  "properties": {
+    "source": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "rule": {
+      "type": "string"
+    },
+    "record": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

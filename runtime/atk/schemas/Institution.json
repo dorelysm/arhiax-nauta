@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Institution.json",
+  "title": "Institution",
+  "type": "object",
+  "required": [
+    "id",
+    "authorization_status",
+    "overlay_status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorization_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "expired"
+      ]
+    },
+    "overlay_status": {
+      "type": "string",
+      "enum": [
+        "calibrated",
+        "uncalibrated"
+      ]
+    },
+    "a4_enabled": {
+      "type": "boolean"
+    },
+    "a4_signed_by_dpo": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

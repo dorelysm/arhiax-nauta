@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "HealthResponse.json",
+  "title": "HealthResponse",
+  "type": "object",
+  "required": [
+    "status"
+  ],
+  "properties": {
+    "status": {
+      "type": "string"
+    },
+    "policy_bundle_version": {
+      "type": "string"
+    }
+  }
+}

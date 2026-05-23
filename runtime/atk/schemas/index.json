@@ -1,0 +1,19 @@
+{
+  "source": "runtime/atk/openapi.json",
+  "schemas": [
+    "ActionCategory",
+    "AutonomyLevel",
+    "Severity",
+    "Outcome",
+    "Requester",
+    "Institution",
+    "Transport",
+    "Output",
+    "EvaluateRequest",
+    "Reason",
+    "AuditEffect",
+    "EvaluateResponse",
+    "ErrorResponse",
+    "HealthResponse"
+  ]
+}

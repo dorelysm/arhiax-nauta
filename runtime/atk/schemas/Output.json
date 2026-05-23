@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Output.json",
+  "title": "Output",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audience": {
+      "type": "string"
+    },
+    "target_role": {
+      "type": "string"
+    },
+    "contains_clinical_content": {
+      "type": "boolean"
+    },
+    "routed_via_navigator": {
+      "type": "boolean"
+    },
+    "contains_medical_disclaimer": {
+      "type": "boolean"
+    },
+    "severity": {
+      "$ref": "Severity.json"
+    },
+    "referenced_criteria": {
+      "type": "object",
+      "properties": {
+        "citation": {
+          "type": "string"
+        },
+        "publication_doi": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

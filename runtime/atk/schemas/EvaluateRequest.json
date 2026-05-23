@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "EvaluateRequest.json",
+  "title": "EvaluateRequest",
+  "type": "object",
+  "required": [
+    "action_id",
+    "action_category",
+    "autonomy_level",
+    "target_role",
+    "timestamp",
+    "patient_id",
+    "patient_id_hash",
+    "requester",
+    "institution",
+    "transport"
+  ],
+  "properties": {
+    "action_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action_category": {
+      "$ref": "ActionCategory.json"
+    },
+    "autonomy_level": {
+      "$ref": "AutonomyLevel.json"
+    },
+    "target_role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_composition_profile": {
+      "type": "string"
+    },
+    "target_bundle_profile": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "access_timestamp": {
+      "type": "string"
+    },
+    "access_purpose": {
+      "type": "string"
+    },
+    "data_category": {
+      "type": "string"
+    },
+    "patient_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "patient_id_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requester": {
+      "$ref": "Requester.json"
+    },
+    "institution": {
+      "$ref": "Institution.json"
+    },
+    "transport": {
+      "$ref": "Transport.json"
+    },
+    "composition": {
+      "type": "object"
+    },
+    "bundle": {
+      "type": "object"
+    },
+    "output": {
+      "$ref": "Output.json"
+    },
+    "divergence_severity": {
+      "$ref": "Severity.json"
+    },
+    "consent": {
+      "type": "object",
+      "properties": {
+        "granted": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action_category": {
+            "const": "data_access"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "access_timestamp",
+          "access_purpose",
+          "data_category"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_category": {
+            "const": "produce_composition"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "target_composition_profile",
+          "composition"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_category": {
+            "const": "submit_bundle_to_ihce"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "bundle"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Transport.json",
+  "title": "Transport",
+  "type": "object",
+  "required": [
+    "tls_version"
+  ],
+  "properties": {
+    "tls_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cipher_suite": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

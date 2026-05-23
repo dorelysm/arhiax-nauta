@@ -29,3 +29,7 @@ runtime/atk/.audit-stream/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Keys / Crypto (Private keys should never be committed)
+keys/*private.pem
+

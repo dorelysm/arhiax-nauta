@@ -6,12 +6,16 @@
   "scripts": {
     "test": "node --test runtime/atk/*.test.mjs",
     "fixtures": "node scripts/test-fixtures.mjs",
-    "schema:emit": "node scripts/emit-schemas.mjs"
+    "schema:emit": "node scripts/emit-schemas.mjs",
+    "sbom": "cyclonedx-npm --output-format JSON --output-file docs/sbom.json --omit dev"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
     "ajv": "^8.17.1"
+  },
+  "devDependencies": {
+    "@cyclonedx/cyclonedx-npm": "^4.2.1"
   }
 }

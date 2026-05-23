@@ -32,6 +32,12 @@ jobs:
       - name: Test
         run: opa test policy-bundle-nauta-colombia
 
+      - name: Generate cryptographic keys
+        run: node scripts/generate-keys.mjs
+
+      - name: Sign OPA policies
+        run: opa sign --bundle --signing-key keys/development-private.pem -o policy-bundle-nauta-colombia policy-bundle-nauta-colombia
+
       - name: Build bundle
         run: opa build policy-bundle-nauta-colombia -o nauta-policy-bundle.tar.gz
 

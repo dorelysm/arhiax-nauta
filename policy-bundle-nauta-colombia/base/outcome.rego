@@ -47,11 +47,15 @@ else := "PERMIT" if is_allowed
 else := "AUDIT" if count(all_audit) > 0
 else := "DENY"
 
+default final_reasons := []
+
+permit_reason := [{"source": "allow", "message": "At least one policy package allowed the action."}]
+
 final_reasons := all_suspend if final_outcome == "SUSPEND"
 else := all_deny if final_outcome == "DENY"
 else := all_escalate if final_outcome == "ESCALATE"
 else := all_modify if final_outcome == "MODIFY"
-else := [{"source": "allow", "message": "At least one policy package allowed the action."}] if final_outcome == "PERMIT"
+else := permit_reason if final_outcome == "PERMIT"
 else := all_audit if final_outcome == "AUDIT"
 
 also_emitted := {

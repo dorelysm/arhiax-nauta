@@ -28,6 +28,12 @@ if (-not $OpaCommand) {
     $Opa = $OpaCommand.Source
 }
 
+$env:OPA_BIN = $Opa
+Write-Host "Configurado OPA_BIN para subprocesos: $env:OPA_BIN"
+
+Write-Host "==> Generando Llaves de Seguridad"
+Invoke-Checked { node scripts/generate-keys.mjs }
+
 Write-Host "==> OPA version"
 Invoke-Checked { & $Opa version }
 
@@ -39,6 +45,9 @@ Invoke-Checked { & $Opa check $BundlePath }
 
 Write-Host "==> Tests"
 Invoke-Checked { & $Opa test $BundlePath }
+
+Write-Host "==> Firmando Políticas"
+Invoke-Checked { & $Opa sign --bundle --signing-key keys/development-private.pem -o $BundlePath $BundlePath }
 
 Write-Host "==> Build"
 Invoke-Checked { & $Opa build $BundlePath -o nauta-policy-bundle.tar.gz }

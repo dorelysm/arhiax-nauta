@@ -1,0 +1,84 @@
+{
+  "expected_outcome": {
+    "outcome": "DENY",
+    "primary_rule": "HD-02",
+    "rationale": "Acceso a categoría sensible 'mental_health' donde la política firmada existe pero con consent_type='blanket'. HD-02 (Ley 1581/2012 Art. 6) exige autorización granular_explicit por categoría para datos sensibles; el bloque (blanket) no se acepta.",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0011",
+    "action_category": "data_access",
+    "autonomy_level": "A3",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T18:00:00-05:00",
+    "access_timestamp": "2026-05-23T18:00:00-05:00",
+    "access_purpose": "longitudinal_coordination",
+    "data_category": "mental_health",
+    "patient_id": "pt-co-cc-bbbbbbbbbb",
+    "patient_id_hash": "bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb0bb00",
+    "requester": {
+      "role": "clinical-navigator",
+      "institution_id": "ips_fsfb_bog",
+      "institution_type": "ips_hospital"
+    },
+    "institution": {
+      "id": "ips_fsfb_bog",
+      "authorization_status": "active",
+      "overlay_status": "calibrated",
+      "a4_enabled": false,
+      "a4_signed_by_dpo": false
+    },
+    "transport": {
+      "tls_version": "1.3",
+      "cipher_suite": "TLS_AES_256_GCM_SHA384"
+    },
+    "consent": {
+      "granted": true
+    },
+    "output": {
+      "label": "narrative_organization",
+      "audience": "clinical-navigator",
+      "target_role": "clinical-navigator",
+      "contains_clinical_content": true,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": true
+    },
+    "divergence_severity": "low"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator", "patient", "patient_authorized_representative"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0011": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T17:59:59-05:00",
+            "actor_id": "nauta-agent-001",
+            "action_type": "data_access",
+            "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          }
+        }
+      },
+      "feedback": {
+        "ips_fsfb_bog": { "rejected_30d": 0, "accepted_30d": 5, "last_updated": "2026-05-23T08:00:00-05:00" }
+      }
+    },
+    "consent": {
+      "policies": {
+        "pt-co-cc-bbbbbbbbbb": [
+          {
+            "requester_role": "clinical-navigator",
+            "data_category": "mental_health",
+            "purpose": "longitudinal_coordination",
+            "status": "active",
+            "consent_type": "blanket",
+            "signed_timestamp": "2026-03-01T09:00:00-05:00"
+          }
+        ]
+      },
+      "revocations": {},
+      "exclusions": {}
+    }
+  }
+}

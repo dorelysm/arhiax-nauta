@@ -425,3 +425,77 @@ Tareas:
 
 Nota para Opus:
 - Es esperado que `scripts/test-fixtures.mjs` necesite una actualización de Codex para reconocer `R1888-06`, `HD-02` y `AUT-05`. Tú no ajustes el harness; deja el trabajo listo y yo lo conecto.
+
+### 2026-05-23 19:30 - Claude Opus 4.7
+
+Archivos (sin commit; Codex revisa y publica):
+- `docs/RUNTIME_API_CONTRACT.md` (nuevo).
+- `fixtures/evaluate/invalid-transport-denied.json` (nuevo) — DENY · R1888-06.
+- `fixtures/evaluate/sensitive-blanket-denied.json` (nuevo) — DENY · HD-02.
+- `fixtures/evaluate/rejection-quota-suspend.json` (nuevo) — SUSPEND · AUT-05.
+- `fixtures/evaluate/README.md` (ampliado): inventario completo en tabla con outcome, primary rule y doctrina; explicación del campo `expected_outcome.primary_rule`; sección de ejecución del harness.
+
+Acciones:
+- Releídas `res-1888-2025/rda_conformance.rego` (R1888-05/06/07), `habeas-data/granular_consent.rego` (HD-02), `base/autonomy.rego` (AUT-05) y `runtime/atk/outcome.mjs` para alinear el contrato API a la realidad doctrinal y a la precedencia ATK ya implementada en JS.
+- `invalid-transport-denied.json` incluye un Provenance firmado con role ASSEMBLER y signature `application/jose` (R1888-05) para que el outcome quede limpiamente atribuible a R1888-06 (TLS 1.2) y no se duplique deny por provenance ausente.
+- `sensitive-blanket-denied.json` usa `data.consent.policies[patient].consent_type = "blanket"` con `data_category = mental_health` para aislar HD-02 sin disparar HD-04 ni HD-03.
+- `rejection-quota-suspend.json` fija `feedback.rejected_30d = 8` y `data_overrides.thresholds.institutional.ips_cgn_baq.max_consecutive_rejections = 7` para que AUT-05 dispare SUSPEND sin tocar overlay_status.
+- No modifiqué `.rego`, `runtime/`, `scripts/` ni `.github/` (regla 4 del bloque 4).
+
+Comandos:
+- `node scripts/test-fixtures.mjs`
+
+Resultado:
+- 12/12 fixtures PASS contra OPA real:
+  - hic-routing-invalid → ESCALATE (HIC-3)
+  - invalid-transport-denied → DENY (R1888-06)
+  - missing-ledger → DENY (AUT-03)
+  - r1888-ambulatory-profile-denied → DENY (R1888-01)
+  - rejection-quota-suspend → SUSPEND (AUT-05)
+  - revoked-consent → SUSPEND (HD-04)
+  - samd-missing-disclaimer → DENY (SAMD-04)
+  - samd-nauta-as-composition-author → DENY (SAMD-05)
+  - samd-violation → DENY (SAMD-01)
+  - sensitive-blanket-denied → DENY (HD-02)
+  - uncalibrated-critical-divergence → SUSPEND (AUT-04)
+  - valid-rda-submission → PERMIT (R1888-01 + AUT-01 + HD-01)
+- Nota: el harness en `main` ya incluye los prefijos `R1888-06`, `HD-02` y `AUT-05` en `assertExpected.checks`. La nota del bloque 4 era anticipatoria pero el ajuste ya está integrado, por lo que no quedó trabajo pendiente para Codex en `scripts/test-fixtures.mjs`.
+
+Riesgos / dudas:
+- `RUNTIME_API_CONTRACT.md` propone obligar `X-ARHIAX-Idempotency-Key` y `policy_bundle_version` en la respuesta. Si Codex prefiere idempotencia opcional o versión inferida por bundle hash, puedo regenerar.
+- El contrato propone que `422` lleve outcome=DENY con `primary_rule=FHIR-VAL-01`. Esa regla no existe todavía en Rego; vive solo en el runtime. Si Codex prefiere tipificar también en Rego, lo abro como gap futuro (puede entrar al `OUTCOME_AGGREGATOR_DESIGN.md`).
+- Dejé 5 decisiones pendientes en §8 del contrato (ULID vs UUIDv7, alcance de `reasons`, idempotencia, AUDIT sync/async, JSON Schema vs OpenAPI).
+- Verifiqué que los 3 fixtures nuevos son insensibles a overlay/feedback no relacionados, pero AUT-05 depende de un `data_overrides.thresholds.institutional.ips_cgn_baq.max_consecutive_rejections = 7` que sobreescribe el valor por institución del `thresholds.json` base (que es 7 también según `data/thresholds.json:27`). El fixture funciona aunque se elimine el override; se mantiene por explicitness.
+
+Siguiente:
+- Codex revisa contrato API y los 3 fixtures nuevos.
+- Próximo bloque candidato sugerido: (a) generar JSON Schema desde `RUNTIME_API_CONTRACT.md` §2.2 + §3.1 para que el runtime valide request/response automáticamente; (b) ampliar cobertura negativa restante (R1888-05 sin provenance, HD-03 exclusión explícita, SAMD-02 routing directo a treating-physician, SAMD-03 sin cita); (c) o pasar a fixtures FHIR mínimos cuando se confirme paquete `minsalud.fhir.co.rda#0.8.1`. Codex decide.
+
+## Siguiente Bloque Para Opus
+
+### Bloque 5 - Más Cobertura Negativa y Decisiones del Contrato
+
+Regla operativa: Opus escribe localmente y registra la gestión; Codex revisa, valida, ajusta harness si hace falta, commitea y publica.
+
+Objetivo: cerrar huecos regulatorios restantes antes de implementar validación schema y endpoint real.
+
+Tareas:
+
+1. Crear fixtures:
+   - `fixtures/evaluate/r1888-missing-provenance-denied.json` para `R1888-05`.
+   - `fixtures/evaluate/hd-explicit-exclusion-denied.json` para `HD-03`.
+   - `fixtures/evaluate/samd-direct-physician-routing-denied.json` para `SAMD-02`.
+   - `fixtures/evaluate/samd-missing-criteria-citation-escalate.json` para `SAMD-03`.
+2. Actualizar `fixtures/evaluate/README.md` con esos cuatro fixtures.
+3. Crear `docs/RUNTIME_API_DECISIONS.md` resolviendo, con recomendación concreta, las decisiones abiertas de `docs/RUNTIME_API_CONTRACT.md` §8:
+   - ULID vs UUIDv7.
+   - `reasons` solo outcome aplicado vs incluir secundarios.
+   - idempotency obligatoria vs opcional.
+   - AUDIT síncrono vs asíncrono.
+   - JSON Schema vs OpenAPI.
+4. No modificar `.rego`, `runtime/`, `scripts/` ni `.github/`.
+5. Si `node scripts/test-fixtures.mjs` falla porque el harness no reconoce reglas nuevas (`R1888-05`, `HD-03`, `SAMD-02`, `SAMD-03`), registra el fallo exacto y no ajustes el harness.
+6. Registrar todo en esta bitácora.
+
+Nota:
+- Intenta aislar cada regla. Por ejemplo, en `SAMD-02` evita `target_role=treating-physician` si eso dispara `AUT-02`; usa `output.target_role` o campos específicos que dispare SAMD-02 sin mezclar outcomes, si la regla lo permite.

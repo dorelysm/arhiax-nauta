@@ -1,0 +1,74 @@
+{
+  "expected_outcome": {
+    "outcome": "SUSPEND",
+    "primary_rule": "AUT-05",
+    "rationale": "feedback.rejected_30d (=8) supera el umbral institucional max_consecutive_rejections (=7) para ips_cgn_baq. AUT-05 suspende el agente para esa IPS hasta recalibración (TR-032/CT-03). Overlay calibrado y ledger correctos para aislar la regla.",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0012",
+    "action_category": "emit_divergence_notification",
+    "autonomy_level": "A3",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T18:30:00-05:00",
+    "patient_id": "pt-co-cc-cccccccccc",
+    "patient_id_hash": "cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc0cc00",
+    "requester": {
+      "role": "clinical-navigator",
+      "institution_id": "ips_cgn_baq",
+      "institution_type": "ips_hospital"
+    },
+    "institution": {
+      "id": "ips_cgn_baq",
+      "authorization_status": "active",
+      "overlay_status": "calibrated",
+      "a4_enabled": false,
+      "a4_signed_by_dpo": false
+    },
+    "transport": {
+      "tls_version": "1.3",
+      "cipher_suite": "TLS_AES_256_GCM_SHA384"
+    },
+    "output": {
+      "label": "divergence_detection",
+      "audience": "clinical-navigator",
+      "target_role": "clinical-navigator",
+      "contains_clinical_content": true,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": true,
+      "severity": "moderate",
+      "referenced_criteria": {
+        "citation": "Graus F, et al. Lancet Neurol 2016;15:391-404.",
+        "publication_doi": "10.1016/S1474-4422(15)00401-9"
+      }
+    },
+    "divergence_severity": "moderate"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator", "patient", "patient_authorized_representative"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0012": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T18:29:59-05:00",
+            "actor_id": "nauta-agent-001",
+            "action_type": "emit_divergence_notification",
+            "payload_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        }
+      },
+      "feedback": {
+        "ips_cgn_baq": { "rejected_30d": 8, "accepted_30d": 4, "last_updated": "2026-05-23T08:00:00-05:00" }
+      }
+    },
+    "thresholds": {
+      "institutional": {
+        "ips_cgn_baq": {
+          "max_consecutive_rejections": 7
+        }
+      }
+    }
+  }
+}

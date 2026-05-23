@@ -43,6 +43,11 @@ Estos fixtures son la entrada canónica para probar el runtime ATK contra el `po
 | `hd-explicit-exclusion-denied.json` | DENY | HD-03 | Exclusión activa del paciente bloquea propósito específico (TR-032/CF-02) |
 | `samd-direct-physician-routing-denied.json` | DENY | SAMD-02 | Output con contenido clínico ruteado directo a treating-physician sin pasar por clinical-navigator |
 | `samd-missing-criteria-citation-escalate.json` | ESCALATE | SAMD-03 | `criteria_pattern_match` sin `referenced_criteria` (cita publicada exigida para no constituir SaMD) |
+| `r1888-malformed-bundle-denied.json` | DENY | R1888-02 | Bundle con type='collection' (no structural) sin Composition raíz conforme |
+| `r1888-invalid-patient-identifier-denied.json` | DENY | R1888-03 | Patient sin ColombianPersonIdentifier (usa NIT empresa) |
+| `r1888-unaccepted-coding-system-denied.json` | DENY | R1888-04 | Condition con coding system fuera del catálogo (DSM-5 en vez de ICD10CO/SNOMED/LOINC) |
+| `hic-treating-physician-denied.json` | DENY | AUT-02 | `target_role=treating-physician` en top-level (regla cardinal TR-032/CT-02) |
+| `hic-enroll-without-consent-escalate.json` | ESCALATE | HIC-1 | Enrollment sin consentimiento explícito del paciente (Ley 1581/2012 Art. 9) |
 
 ## Ejecución
 
@@ -58,4 +63,4 @@ El harness imprime `PASS <archivo> -> <outcome> (<primary_rule>)` por cada fixtu
 node scripts/test-fixtures.mjs fixtures/evaluate/sensitive-blanket-denied.json
 ```
 
-Nota: el harness en `main` ya reconoce los 12 prefijos en uso (`AUT-03/04/05`, `HIC-3`, `HD-02/03/04`, `R1888-01/05/06`, `SAMD-01/02/03/04/05`). Cualquier nueva regla deberá agregarse al objeto `checks` en `scripts/test-fixtures.mjs`.
+Nota: el harness reconoce 20 prefijos de regla (`AUT-02/03/04/05`, `HIC-1/3`, `HD-02/03/04`, `R1888-01/02/03/04/05/06`, `SAMD-01/02/03/04/05`). Cualquier nueva regla deberá agregarse al objeto `checks` en `scripts/test-fixtures.mjs`.

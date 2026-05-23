@@ -1,0 +1,169 @@
+{
+  "_fixture_meta": {
+    "purpose": "Bundle donde Composition.author es un Practitioner en vez de Patient — debe fallar validación FHIR de perfil Y reglas OPA",
+    "expected_fhir_validation": "FAIL — perfil CompositionPatientStatementRDA restringe author a Patient",
+    "expected_opa_rules_triggered": ["SAMD-05", "R1888-01"],
+    "consumed_by": "HL7 FHIR Validator CLI (validator_cli.jar) con -ig minsalud.fhir.co.rda#0.8.1 -tx n/a",
+    "notes": "Doble falla intencional: (1) el validador FHIR rechaza porque el perfil CompositionPatientStatementRDA exige author de tipo Patient, no Practitioner; (2) SAMD-05 prohíbe que Nauta ni ningún no-Patient figure como author; (3) si el perfil fuera Ambulatory, R1888-01 también deniega. Este fixture usa el perfil correcto (PatientStatement) para aislar SAMD-05 en OPA."
+  },
+  "resourceType": "Bundle",
+  "id": "fixture-invalid-author-practitioner-001",
+  "type": "document",
+  "meta": {
+    "profile": [
+      "https://fhir.minsalud.gov.co/rda/StructureDefinition/BundlePatientStatementRDA"
+    ]
+  },
+  "timestamp": "2026-05-23T10:30:00-05:00",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:comp-bad-author",
+      "resource": {
+        "resourceType": "Composition",
+        "id": "comp-bad-author",
+        "meta": {
+          "profile": [
+            "https://fhir.minsalud.gov.co/rda/StructureDefinition/CompositionPatientStatementRDA"
+          ]
+        },
+        "status": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11503-0",
+              "display": "Medical records"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:pat-bad-author"
+        },
+        "date": "2026-05-23T10:30:00-05:00",
+        "author": [
+          {
+            "reference": "urn:uuid:pract-001",
+            "type": "Practitioner"
+          }
+        ],
+        "title": "Nota clínica — INVÁLIDA: autor Practitioner en RDA Paciente",
+        "section": [
+          {
+            "title": "Condiciones reportadas",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "11450-4",
+                  "display": "Problem list - Reported"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "urn:uuid:cond-bad-author"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:pat-bad-author",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "pat-bad-author",
+        "meta": {
+          "profile": [
+            "https://fhir.minsalud.gov.co/rda/StructureDefinition/PatientRDA"
+          ]
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "https://fhir.minsalud.gov.co/rda/CodeSystem/ColombianPersonIdentifier",
+                  "code": "CC",
+                  "display": "Cédula de Ciudadanía"
+                }
+              ]
+            },
+            "system": "https://fhir.minsalud.gov.co/rda/CodeSystem/ColombianPersonIdentifier",
+            "value": "2020202020"
+          }
+        ],
+        "name": [
+          {
+            "family": "García",
+            "given": ["María"]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1990-07-22"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:pract-001",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "pract-001",
+        "meta": {
+          "profile": [
+            "https://fhir.minsalud.gov.co/rda/StructureDefinition/PractitionerRDA"
+          ]
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "https://fhir.minsalud.gov.co/rda/CodeSystem/ColombianPersonIdentifier",
+                  "code": "CC",
+                  "display": "Cédula de Ciudadanía"
+                }
+              ]
+            },
+            "system": "https://fhir.minsalud.gov.co/rda/CodeSystem/ColombianPersonIdentifier",
+            "value": "9999999999"
+          }
+        ],
+        "name": [
+          {
+            "family": "Rodríguez",
+            "given": ["Pedro"],
+            "prefix": ["Dr."]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:cond-bad-author",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-bad-author",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "https://fhir.minsalud.gov.co/rda/CodeSystem/ICD10CO",
+              "code": "G04.8",
+              "display": "Otras encefalitis, mielitis y encefalomielitis"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:pat-bad-author"
+        },
+        "recordedDate": "2026-03-10"
+      }
+    }
+  ]
+}

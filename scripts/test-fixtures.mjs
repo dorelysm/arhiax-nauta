@@ -119,21 +119,26 @@ function assertExpected(file, fixture, value) {
   const expected = fixture.expected_outcome?.outcome;
 
   const checks = {
+    "AUT-02": hasValue(value.autonomy_deny),
     "AUT-03": hasValue(value.autonomy_deny),
     "AUT-04": hasValue(value.autonomy_suspend),
+    "AUT-05": hasValue(value.autonomy_suspend),
+    "HIC-1": hasValue(value.hic_escalate),
     "HIC-3": hasValue(value.hic_escalate),
+    "HD-02": hasValue(value.habeas_deny),
+    "HD-03": hasValue(value.habeas_deny),
     "HD-04": hasValue(value.habeas_suspend),
     "R1888-01": hasValue(value.res_deny),
+    "R1888-02": hasValue(value.res_deny),
+    "R1888-03": hasValue(value.res_deny),
+    "R1888-04": hasValue(value.res_deny),
     "R1888-05": hasValue(value.res_deny),
     "R1888-06": hasValue(value.res_deny),
     "SAMD-01": hasValue(value.samd_deny),
-    "SAMD-04": hasValue(value.samd_deny),
-    "SAMD-05": hasValue(value.samd_deny),
-    "HD-02": hasValue(value.habeas_deny),
-    "HD-03": hasValue(value.habeas_deny),
-    "AUT-05": hasValue(value.autonomy_suspend),
     "SAMD-02": hasValue(value.samd_deny),
     "SAMD-03": hasValue(value.samd_escalate),
+    "SAMD-04": hasValue(value.samd_deny),
+    "SAMD-05": hasValue(value.samd_deny),
   };
 
   let ok = false;

@@ -15,6 +15,9 @@ Repositorio de construcción para **ARHIAX Nauta**, navegador clínico longitudi
 ```text
 .
 ├── policy-bundle-nauta-colombia/   # Políticas Rego, datos, pruebas y contrato runtime
+├── fixtures/
+│   ├── evaluate/                   # Golden fixtures end-to-end para harness OPA (21 fixtures)
+│   └── fhir/                      # Bundles FHIR R4 para validación de perfiles (3 fixtures)
 ├── docs/                           # Plan senior, revisión y coordinación multi-IA
 ├── references/                     # PDFs, PPTX y bundle original entregado
 ├── scripts/                        # Utilidades de validación local
@@ -39,6 +42,11 @@ La validación ejecuta:
 - `opa build`
 - golden fixtures en `fixtures/evaluate/*.json`
 
+### Validación FHIR (pendiente)
+
+Los fixtures en `fixtures/fhir/` están diseñados para ser consumidos por el [HL7 FHIR Validator CLI](https://github.com/hapifhir/org.hl7.fhir.core) con el paquete `minsalud.fhir.co.rda#0.8.1`. Ver `docs/FHIR_VALIDATION_NOTES.md` para la nota técnica completa.
+
 ## Doctrina de ingeniería
 
 Nauta **media, no decide**. El repositorio debe preservar tres propiedades: atestación antes de acción, separación constructor/auditor y producción exclusiva de RDA Paciente. Cualquier cambio que debilite esas propiedades debe bloquearse en revisión.
+

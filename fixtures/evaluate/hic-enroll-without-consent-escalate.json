@@ -1,0 +1,66 @@
+{
+  "expected_outcome": {
+    "outcome": "ESCALATE",
+    "primary_rule": "HIC-1",
+    "rationale": "enroll_patient sin consentimiento explícito del paciente (consent.granted = false). HIC-1 exige autorización previa documentada del paciente antes de enrolarlo bajo navegación Nauta (Ley 1581/2012 Art. 9). Enrolar sin consentimiento constituye violación directa de Habeas Data. La institución tiene authorization_status activo para aislar HIC-1 de la segunda condición (autorización institucional).",
+    "also_emits": []
+  },
+  "input": {
+    "action_id": "act-2026-05-23-0024",
+    "action_category": "enroll_patient",
+    "autonomy_level": "A2",
+    "target_role": "clinical-navigator",
+    "timestamp": "2026-05-23T23:00:00-05:00",
+    "patient_id": "pt-co-cc-e5e5e5e5e5",
+    "patient_id_hash": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+    "requester": {
+      "role": "clinical-navigator",
+      "institution_id": "ips_fsfb_bog",
+      "institution_type": "ips_hospital"
+    },
+    "institution": {
+      "id": "ips_fsfb_bog",
+      "authorization_status": "active",
+      "overlay_status": "calibrated",
+      "a4_enabled": false,
+      "a4_signed_by_dpo": false
+    },
+    "transport": {
+      "tls_version": "1.3",
+      "cipher_suite": "TLS_AES_256_GCM_SHA384"
+    },
+    "consent": {
+      "granted": false
+    },
+    "output": {
+      "label": "consent_evaluation",
+      "audience": "clinical-navigator",
+      "target_role": "clinical-navigator",
+      "contains_clinical_content": false,
+      "routed_via_navigator": true,
+      "contains_medical_disclaimer": true,
+      "severity": "low"
+    },
+    "divergence_severity": "low"
+  },
+  "data_overrides": {
+    "runtime": {
+      "authorized_roles": ["clinical-navigator", "patient", "patient_authorized_representative"],
+      "ledger": {
+        "records": {
+          "act-2026-05-23-0024": {
+            "verified": true,
+            "hmac_signature_valid": true,
+            "timestamp": "2026-05-23T22:59:59-05:00",
+            "actor_id": "nauta-agent-001",
+            "action_type": "enroll_patient",
+            "payload_hash": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5"
+          }
+        }
+      },
+      "feedback": {
+        "ips_fsfb_bog": { "rejected_30d": 0, "accepted_30d": 0, "last_updated": "2026-05-23T08:00:00-05:00" }
+      }
+    }
+  }
+}

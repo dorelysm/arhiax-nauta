@@ -1,0 +1,13 @@
+{
+  "name": "arhiax-nauta",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test runtime/atk/*.test.mjs",
+    "fixtures": "node scripts/test-fixtures.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

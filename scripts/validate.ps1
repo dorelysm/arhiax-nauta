@@ -46,4 +46,7 @@ Invoke-Checked { & $Opa build $BundlePath -o nauta-policy-bundle.tar.gz }
 Write-Host "==> Golden fixtures"
 Invoke-Checked { node .\scripts\test-fixtures.mjs }
 
+Write-Host "==> Runtime unit tests"
+Invoke-Checked { npm test }
+
 Write-Host "Validación completada."

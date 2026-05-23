@@ -326,3 +326,29 @@ Tareas:
 Siguiente bloque probable después de revisión Codex:
 
 - Implementar `arhiax.nauta.base.outcome` o crear primero skeleton del runtime ATK, según lo que recomiende el diseño.
+
+### 2026-05-23 - Codex Runtime Foundation
+
+Archivos:
+- `package.json`
+- `runtime/atk/outcome.mjs`
+- `runtime/atk/outcome.test.mjs`
+- `runtime/atk/README.md`
+- `.github/workflows/opa.yml`
+- `scripts/validate.ps1`
+
+Gestión:
+- Creado primer módulo runtime para resolver resultados OPA a outcomes ATK con precedencia contractual.
+- Agregadas pruebas unitarias Node para precedencia, fail-closed y audit.
+- Integrados tests runtime a validación local y CI.
+
+Comandos:
+- `.\scripts\validate.ps1`
+
+Resultado:
+- `opa test`: `PASS: 13/13`.
+- Golden fixtures: `PASS` en 9/9.
+- Runtime unit tests: `PASS` en 5/5.
+
+Nota:
+- Esta implementación vive en runtime, no modifica reglas Rego. El diseño de Opus sobre `arhiax.nauta.base.outcome` sigue siendo útil para decidir si la precedencia debe moverse a Rego en un bloque posterior.
